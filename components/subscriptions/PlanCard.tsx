@@ -1,8 +1,8 @@
 "use client";
 
-import React, { ReactNode } from 'react';
-import { Check } from 'lucide-react';
-import { Button } from '@/components/ui';
+import React from "react";
+import { Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui";
 
 export interface PlanFeature {
   text: string;
@@ -20,15 +20,20 @@ export interface Plan {
 interface PlanCardProps {
   plan: Plan;
   onUpgrade?: (planId: string) => void;
+  upgradeLoading?: boolean;
 }
 
-const PlanCard: React.FC<PlanCardProps> = ({ plan, onUpgrade }) => {
+const PlanCard: React.FC<PlanCardProps> = ({
+  plan,
+  onUpgrade,
+  upgradeLoading = false,
+}) => {
   const isCurrent = plan.isCurrent || false;
 
   return (
     <div
-      className={` rounded-2xl p-6 border-2 ${
-        isCurrent ? 'border-orange bg-iconBg' : 'border-gray-200 bg-white'
+      className={`rounded-2xl p-6 border-2 ${
+        isCurrent ? "border-orange bg-iconBg" : "border-gray-200 bg-white"
       } shadow-sm relative`}
     >
       {/* Current Plan Badge */}
@@ -53,20 +58,19 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, onUpgrade }) => {
       <div className="space-y-3 mb-6">
         {plan.features.map((feature, index) => (
           <div key={index} className="flex items-start gap-3">
-           <div  className="bg-lightGreen  rounded-full p-1.5"> <Check className="w-5 h-5 text-green shrink-0 mt-0.5" strokeWidth={3} /> </div> 
-            <span className="text-textBlack text-sm leading-relaxed">{feature.text}</span>
+            <div className="bg-lightGreen rounded-full p-1.5">
+              <Check className="w-5 h-5 text-green shrink-0 mt-0.5" strokeWidth={3} />
+            </div>
+            <span className="text-textBlack text-sm leading-relaxed">
+              {feature.text}
+            </span>
           </div>
         ))}
       </div>
 
       {/* Action Button */}
       {isCurrent ? (
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          disabled
-        >
+        <Button variant="secondary" size="md" fullWidth disabled>
           Current Plan
         </Button>
       ) : (
@@ -74,8 +78,12 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, onUpgrade }) => {
           variant="primary"
           size="md"
           fullWidth
+          disabled={upgradeLoading}
           onClick={() => onUpgrade?.(plan.id)}
         >
+          {upgradeLoading && (
+            <Loader2 className="w-4 h-4 animate-spin mr-2 inline-block" />
+          )}
           Upgrade to {plan.name}
         </Button>
       )}
@@ -84,4 +92,3 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, onUpgrade }) => {
 };
 
 export default PlanCard;
-
