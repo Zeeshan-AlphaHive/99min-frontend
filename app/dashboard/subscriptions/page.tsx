@@ -13,6 +13,7 @@ import { useSubscription } from "@/hooks/UseSubscription";
 const SubscriptionsPage: React.FC = () => {
   const searchParams = useSearchParams();
   const stripeSuccess  = searchParams.get("success")  === "true";
+  const planFromUrl    = searchParams.get("plan") as string | null;
   const stripeCanceled = searchParams.get("canceled") === "true";
 
   const {
@@ -78,7 +79,7 @@ const SubscriptionsPage: React.FC = () => {
 
   const dismissSuccessParam = () => {
     // Remove query params without a full navigation
-    window.history.replaceState({}, "", "/subscriptions");
+    window.history.replaceState({}, "", "/dashboard/subscriptions");
   };
 
   return (
@@ -168,7 +169,7 @@ const SubscriptionsPage: React.FC = () => {
           description={
             <>
               You have successfully upgraded to the{" "}
-              <span className="font-bold">{getPlanName(currentPlan)}</span> plan.
+              <span className="font-bold">{getPlanName(planFromUrl || currentPlan)}</span> plan.
             </>
           }
           buttonText="Got it"
