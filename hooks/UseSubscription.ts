@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { getAccessToken } from "@/utils/api/client";
 import {
   getMySubscription,
   createCheckoutSession,
@@ -12,6 +13,9 @@ export const subscriptionQueryKey = ["subscription"];
 
 export function useSubscription() {
   // ── Fetch current subscription ────────────────────────────────────────────
+  // FIX: Only run the query when an access token is present.
+  // Without this guard, the query fires immediately on page load before
+  // the auth token is restored, causing a 401 error on every settings page.
   const {
     data: subscription,
     isLoading: loading,
@@ -19,10 +23,11 @@ export function useSubscription() {
   } = useQuery({
     queryKey: subscriptionQueryKey,
     queryFn: () => getMySubscription().then((res) => res.data),
+    enabled: !!getAccessToken(),   // ← don't run until token is available
     retry: false,
   });
 
-  // ── Create Stripe Checkout Session → redirect ─────────────────────────────
+  // ── Checkout ──────────────────────────────────────────────────────────────
   const {
     mutateAsync: checkoutMutate,
     isPending: checkoutLoading,
@@ -40,7 +45,7 @@ export function useSubscription() {
     [checkoutMutate]
   );
 
-  // ── Open Stripe Customer Portal → redirect ────────────────────────────────
+  // ── Portal ────────────────────────────────────────────────────────────────
   const {
     mutateAsync: portalMutate,
     isPending: portalLoading,
@@ -54,7 +59,7 @@ export function useSubscription() {
     window.location.href = session.url;
   }, [portalMutate]);
 
-  // ── Derived helpers ───────────────────────────────────────────────────────
+  // ── Derived ───────────────────────────────────────────────────────────────
   const currentPlan: PlanId = subscription?.plan ?? "free";
   const isActive =
     subscription?.status === "active" ||
@@ -65,21 +70,9 @@ export function useSubscription() {
 
   // ── Error aggregation ─────────────────────────────────────────────────────
   const error =
-    (queryError instanceof Error
-      ? queryError.message
-      : queryError
-      ? "Failed to load subscription"
-      : null) ??
-    (checkoutError instanceof Error
-      ? checkoutError.message
-      : checkoutError
-      ? "Failed to start checkout"
-      : null) ??
-    (portalError instanceof Error
-      ? portalError.message
-      : portalError
-      ? "Failed to open billing portal"
-      : null);
+    (queryError instanceof Error ? queryError.message : queryError ? "Failed to load subscription" : null) ??
+    (checkoutError instanceof Error ? checkoutError.message : checkoutError ? "Failed to start checkout" : null) ??
+    (portalError instanceof Error ? portalError.message : portalError ? "Failed to open billing portal" : null);
 
   return {
     subscription,

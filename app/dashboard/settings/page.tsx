@@ -97,11 +97,6 @@ const SettingsPage: React.FC = () => {
         <div className="max-w-4xl bg-white mx-auto px-4">
           <SettingsHeader />
 
-          {/*
-            FIX: Old code passed an `avatar` prop that UserProfileCard didn't accept,
-            and the old UserProfileCard required `email` which was never available here.
-            Now UserProfileCard accepts optional `email` and optional `avatar`.
-          */}
           <UserProfileCard
             name={displayName}
             initial={displayInitial}

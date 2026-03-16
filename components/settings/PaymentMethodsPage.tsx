@@ -12,9 +12,7 @@ interface PaymentMethodsPageProps {
   onBack?: () => void;
 }
 
-// FIX: define the accepted card brand type instead of using `any`
 type CardBrand = "visa" | "mastercard" | "amex" | "discover";
-
 const VALID_BRANDS = new Set<CardBrand>(["visa", "mastercard", "amex", "discover"]);
 
 function toCardBrand(brand?: string): CardBrand {
@@ -23,7 +21,7 @@ function toCardBrand(brand?: string): CardBrand {
 }
 
 const PaymentMethodsPage: React.FC<PaymentMethodsPageProps> = ({ onBack }) => {
-  const { methods, loading, saving, error, handleAdd, handleSetDefault, handleDelete } =
+  const { methods, loading, error, handleAdd, handleSetDefault, handleDelete } =
     usePaymentMethods();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -35,9 +33,9 @@ const PaymentMethodsPage: React.FC<PaymentMethodsPageProps> = ({ onBack }) => {
     setIsRemoveModalOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (selectedMethodId) {
-       handleDelete(selectedMethodId); 
+      handleDelete(selectedMethodId);
       setSelectedMethodId(null);
       setIsRemoveModalOpen(false);
     }
@@ -56,16 +54,24 @@ const PaymentMethodsPage: React.FC<PaymentMethodsPageProps> = ({ onBack }) => {
     cvv: string;
     cardholderName: string;
   }) => {
-    const [expMonth, expYear] = cardData.expiryDate.split("/");
+    const [expMonthStr, expYearStr] = cardData.expiryDate.split("/");
     const brand = detectBrand(cardData.cardNumber);
+
+    // FIX: Modal gives 2-digit year (e.g. "34") but backend validator requires
+    // full 4-digit year >= current year. Convert "34" → 2034.
+    const expMonth = Number(expMonthStr);
+    const expYearRaw = Number(expYearStr);
+    const expYear = expYearRaw < 100
+      ? 2000 + expYearRaw   // 34 → 2034
+      : expYearRaw;
 
     const success = await handleAdd({
       stripePaymentMethodId: `pm_stub_${Date.now()}`,
       type: "card",
       brand,
       last4: cardData.cardNumber.slice(-4),
-      expMonth: Number(expMonth),
-      expYear: Number(expYear),
+      expMonth,
+      expYear,
       isDefault: methods.length === 0,
     });
 
@@ -101,7 +107,6 @@ const PaymentMethodsPage: React.FC<PaymentMethodsPageProps> = ({ onBack }) => {
             {methods.map((method) => (
               <PaymentMethodCard
                 key={method._id}
-                // FIX: use toCardBrand() helper instead of `as any`
                 cardType={toCardBrand(method.brand)}
                 last4={method.last4 ?? "****"}
                 expiryMonth={String(method.expMonth ?? "").padStart(2, "0")}
