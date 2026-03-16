@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import NotificationCard from "@/components/dashboard/NotificationCard";
 import { Bell, CheckCheck, RefreshCw } from "lucide-react";
 import { useNotifications } from "@/hooks/UseNotification";
-import { ApiNotification } from "@/services/notification.service";
+import { ApiNotification } from "@/utils/api/notification.api";
 
 const NotificationsPage: React.FC = () => {
   const {
