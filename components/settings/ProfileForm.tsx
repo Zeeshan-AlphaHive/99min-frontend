@@ -3,7 +3,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui";
-import { UpdateProfilePayload } from "@/services/settings.service";
+import { UpdateProfilePayload } from "@/utils/api/settings.api";
 
 interface ProfileFormProps {
   defaultValues: {

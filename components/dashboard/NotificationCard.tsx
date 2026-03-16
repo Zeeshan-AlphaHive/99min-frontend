@@ -2,12 +2,13 @@
 
 import React from "react";
 import { Bell, MessageSquare, Clock, InfoIcon, CheckCheck } from "lucide-react";
-import { ApiNotification } from "@/services/notification.service";
+import { ApiNotification } from "@/utils/api/notification.api";
 
 // Map API types → display config
 const NOTIFICATION_CONFIG: Record<
   ApiNotification["type"],
   { icon: React.ReactNode; iconBgColor: string }
+
 > = {
   new_response: {
     icon: <Bell className="w-5 h-5 text-orange-500" />,
