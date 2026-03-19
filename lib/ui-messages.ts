@@ -1,6 +1,6 @@
 /**
  * UI strings keyed by locale (BCP 47 codes matching LanguageDropdown).
- * Missing keys fall back to English.
+ * Missing keys fall back to English. 
  */
 export type MessageKey =
   | "nav.exploreHome"
