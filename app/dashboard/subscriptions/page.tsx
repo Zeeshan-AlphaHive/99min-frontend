@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SubscriptionsHeader from "@/components/subscriptions/SubscriptionsHeader";
 import PlanCard, { Plan } from "@/components/subscriptions/PlanCard";
@@ -17,6 +18,7 @@ const PLAN_RANK: Record<string, number> = { free: 0, pro: 1, business: 2 };
 
 const SubscriptionsPage: React.FC = () => {
   const searchParams   = useSearchParams();
+  const t              = useTranslations();
   const stripeSuccess  = searchParams.get("success")  === "true";
   const planFromUrl    = searchParams.get("plan") as string | null;
   const stripeCanceled = searchParams.get("canceled") === "true";
@@ -35,34 +37,26 @@ const SubscriptionsPage: React.FC = () => {
 
   const planDefs = [
     {
-      id: "free", name: "Free", price: "0", pricePeriod: "/ forever",
+      id: "free", name: t("subscriptions.free"), price: "0", pricePeriod: t("subscriptions.forever"),
       features: [
-        { text: "Post up to 3 ads per day" },
-        { text: "Respond to unlimited tasks" },
-        { text: "Basic support" },
-        { text: "Ads expire in 99 minutes" },
+        { text: t("subscriptions.freeFeatures.f1") }, { text: t("subscriptions.freeFeatures.f2") },
+        { text: t("subscriptions.freeFeatures.f3") }, { text: t("subscriptions.freeFeatures.f4") },
       ],
     },
     {
-      id: "pro", name: "Pro", price: "9.99", pricePeriod: "/ per month",
+      id: "pro", name: t("subscriptions.pro"), price: "9.99", pricePeriod: t("subscriptions.perMonth"),
       features: [
-        { text: "Post unlimited ads" },
-        { text: "Priority ad placement" },
-        { text: "Extended ad duration (up to 3 hours)" },
-        { text: "Priority support" },
-        { text: "Analytics dashboard" },
-        { text: "Custom location radius" },
+        { text: t("subscriptions.proFeatures.f1") }, { text: t("subscriptions.proFeatures.f2") },
+        { text: t("subscriptions.proFeatures.f3") }, { text: t("subscriptions.proFeatures.f4") },
+        { text: t("subscriptions.proFeatures.f5") }, { text: t("subscriptions.proFeatures.f6") },
       ],
     },
     {
-      id: "business", name: "Business", price: "29.99", pricePeriod: "/ per month",
+      id: "business", name: t("subscriptions.business"), price: "29.99", pricePeriod: t("subscriptions.perMonth"),
       features: [
-        { text: "Everything in Pro" },
-        { text: "Team accounts (up to 5 members)" },
-        { text: "API access" },
-        { text: "Dedicated account manager" },
-        { text: "Custom integrations" },
-        { text: "Advanced analytics" },
+        { text: t("subscriptions.businessFeatures.f1") }, { text: t("subscriptions.businessFeatures.f2") },
+        { text: t("subscriptions.businessFeatures.f3") }, { text: t("subscriptions.businessFeatures.f4") },
+        { text: t("subscriptions.businessFeatures.f5") }, { text: t("subscriptions.businessFeatures.f6") },
       ],
     },
   ];
@@ -74,11 +68,9 @@ const SubscriptionsPage: React.FC = () => {
   }));
 
   const getPlan     = (id: string) => plans.find((p) => p.id === id);
-  const getPlanName = (id: string) => getPlan(id)?.name ?? "Plan";
+  const getPlanName = (id: string) => getPlan(id)?.name ?? t("subscriptions.plan");
 
-  const dismissSuccessParam = () => {
-    window.history.replaceState({}, "", "/dashboard/subscriptions");
-  };
+  const dismissSuccessParam = () => window.history.replaceState({}, "", "/dashboard/subscriptions");
 
   const handlePlanUpgradeClick = (planId: string) => {
     if (defaultCard) setPendingUpgradePlanId(planId);
@@ -98,11 +90,8 @@ const SubscriptionsPage: React.FC = () => {
     await handleUpgrade(id, false);
   };
 
-  const handlePlanDowngradeClick = (planId: string) => {
-    setPendingDowngradePlanId(planId);
-  };
+  const handlePlanDowngradeClick = (planId: string) => setPendingDowngradePlanId(planId);
 
-  // Calls cancel endpoint — never passes "free" to checkout
   const handleDowngradeConfirm = async () => {
     await handleCancel();
     setPendingDowngradePlanId(null);
@@ -117,23 +106,21 @@ const SubscriptionsPage: React.FC = () => {
         <SubscriptionsHeader />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black text-textBlack mb-2">Choose Your Plan</h1>
-            <p className="text-textGray text-base">Upgrade to unlock more features</p>
+            <h1 className="text-3xl font-black text-textBlack mb-2">{t("subscriptions.title")}</h1>
+            <p className="text-textGray text-base">{t("subscriptions.subtitle")}</p>
           </div>
 
           {stripeCanceled && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm text-center">
-              Payment was canceled — you can try again anytime.
+              {t("subscriptions.canceledNotice")}
             </div>
           )}
 
           {cancelAtPeriodEnd && renewsAt && (
             <div className="mb-6 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm text-center">
-              Your plan is scheduled to downgrade to Free on{" "}
+              {t("subscriptions.downgradeNotice")}{" "}
               <span className="font-semibold">
-                {new Date(renewsAt).toLocaleDateString(undefined, {
-                  year: "numeric", month: "long", day: "numeric",
-                })}
+                {new Date(renewsAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
               </span>.
             </div>
           )}
@@ -147,10 +134,10 @@ const SubscriptionsPage: React.FC = () => {
           {isPaidPlan && (
             <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-gray-50 border border-gray-200">
               <div>
-                <p className="text-sm font-semibold text-textBlack">{getPlanName(currentPlan)} Plan</p>
+                <p className="text-sm font-semibold text-textBlack">{getPlanName(currentPlan)} {t("subscriptions.plan")}</p>
                 {renewsAt && (
                   <p className="text-xs text-textGray mt-0.5">
-                    {cancelAtPeriodEnd ? "Expires" : "Renews"}{" "}
+                    {cancelAtPeriodEnd ? t("subscriptions.expires") : t("subscriptions.renews")}{" "}
                     {new Date(renewsAt).toLocaleDateString()}
                   </p>
                 )}
@@ -159,7 +146,7 @@ const SubscriptionsPage: React.FC = () => {
                 {portalLoading
                   ? <Loader2 className="w-4 h-4 animate-spin mr-1.5 inline-block" />
                   : <Settings className="w-4 h-4 mr-1.5 inline-block" />}
-                Manage Billing
+                {t("subscriptions.manageBilling")}
               </Button>
             </div>
           )}
@@ -171,13 +158,10 @@ const SubscriptionsPage: React.FC = () => {
           ) : (
             <div className="space-y-6">
               {plans.map((plan) => (
-                <PlanCard
-                  key={plan.id}
-                  plan={plan}
+                <PlanCard key={plan.id} plan={plan}
                   onUpgrade={handlePlanUpgradeClick}
                   onDowngrade={handlePlanDowngradeClick}
-                  upgradeLoading={checkoutLoading}
-                />
+                  upgradeLoading={checkoutLoading} />
               ))}
             </div>
           )}
@@ -189,12 +173,8 @@ const SubscriptionsPage: React.FC = () => {
             onClose={() => setPendingUpgradePlanId(null)}
             planName={pendingUpgradePlan.name}
             planPrice={pendingUpgradePlan.price}
-            savedCard={{
-              brand:    defaultCard.brand    ?? "",
-              last4:    defaultCard.last4    ?? "****",
-              expMonth: defaultCard.expMonth ?? "",
-              expYear:  defaultCard.expYear  ?? "",
-            }}
+            savedCard={{ brand: defaultCard.brand ?? "", last4: defaultCard.last4 ?? "****",
+              expMonth: defaultCard.expMonth ?? "", expYear: defaultCard.expYear ?? "" }}
             onUseSavedCard={handleUseSavedCard}
             onUseNewCard={handleUseNewCard}
             loading={checkoutLoading}
@@ -216,14 +196,13 @@ const SubscriptionsPage: React.FC = () => {
         <SuccessModal
           isOpen={stripeSuccess}
           onClose={dismissSuccessParam}
-          title="Upgrade Successful!"
+          title={t("subscriptions.upgradeSuccess")}
           description={
-            <>
-              You have successfully upgraded to the{" "}
-              <span className="font-bold">{getPlanName(planFromUrl || currentPlan)}</span> plan.
-            </>
+            <>{t("subscriptions.upgradeSuccessDesc")}{" "}
+              <span className="font-bold">{getPlanName(planFromUrl || currentPlan)}</span>{" "}
+              {t("subscriptions.upgradeSuccessDesc2")}</>
           }
-          buttonText="Got it"
+          buttonText={t("common.gotIt")}
           icon={<Check className="w-10 h-10" strokeWidth={3} />}
         />
       </div>
