@@ -1,12 +1,13 @@
 "use client";
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
 import PageHeader from '@/components/shared/PageHeader';
+import { useI18n } from '@/contexts/i18n-context';
 
 const CreateTaskHeader: React.FC = () => {
-  const t = useTranslations();
-  return <PageHeader title={t("task.createHeader")} />;
+  const { tr } = useI18n();
+  return <PageHeader title={tr("Create Task Ad")} />;
 };
 
 export default CreateTaskHeader;
+

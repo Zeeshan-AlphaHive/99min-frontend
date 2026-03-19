@@ -7,6 +7,7 @@ import PaymentMethodCard from "./PaymentMethodCard";
 import AddPaymentMethodModal from "./AddPaymentMethodModal";
 import RemovePaymentMethodModal from "./RemovePaymentMethodModal";
 import { usePaymentMethods } from "@/hooks/UsePaymentMethod";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface PaymentMethodsPageProps {
   onBack?: () => void;
@@ -21,6 +22,7 @@ function toCardBrand(brand?: string): CardBrand {
 }
 
 const PaymentMethodsPage: React.FC<PaymentMethodsPageProps> = ({ onBack }) => {
+  const { tr } = useI18n();
   const { methods, loading, error, handleAdd, handleSetDefault, handleDelete } =
     usePaymentMethods();
 
@@ -97,7 +99,7 @@ const PaymentMethodsPage: React.FC<PaymentMethodsPageProps> = ({ onBack }) => {
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-4">
         {error && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{tr(error)}</div>
         )}
 
         <AddPaymentMethodCard onClick={() => setIsAddModalOpen(true)} />

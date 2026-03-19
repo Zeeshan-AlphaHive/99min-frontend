@@ -3,6 +3,7 @@
 import React from 'react';
 import { Monitor, Palette, Package, PawPrint, Globe, Activity } from 'lucide-react';
 import CategoryButton from '@/components/shared/CategoryButton';
+import { useI18n } from '@/contexts/i18n-context';
 
 export interface Category {
   id: string;
@@ -28,10 +29,11 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   selectedCategory,
   onCategoryChange,
 }) => {
+  const { tr } = useI18n();
   return (
     <div className="mb-6">
       <label className="block text-textBlack text-sm font-bold mb-3 ml-1">
-        Category
+        {tr("Category")}
       </label>
       <div className="flex flex-wrap gap-3">
         {categories.map((category) => {
@@ -39,7 +41,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           return (
             <CategoryButton
               key={category.id}
-              label={category.label}
+              label={tr(category.label)}
               icon={category.icon}
               active={isActive}
               onClick={() => onCategoryChange(category.id)}

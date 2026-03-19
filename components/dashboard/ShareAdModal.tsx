@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface ShareAdModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const ShareAdModal: React.FC<ShareAdModalProps> = ({
   onClose,
   onShare,
 }) => {
+  const { tr } = useI18n();
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -70,7 +72,7 @@ const ShareAdModal: React.FC<ShareAdModalProps> = ({
       <div className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-textBlack">Share Ad</h2>
+          <h2 className="text-xl font-bold text-textBlack">{tr("Share Ad")}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
@@ -92,7 +94,7 @@ const ShareAdModal: React.FC<ShareAdModalProps> = ({
                 >
                   <div className={`text-2xl font-bold`}>{option.icon}</div>
                   <span className="text-xs font-medium text-textBlack text-center">
-                    {option.label}
+                    {tr(option.label)}
                   </span>
                 </button>
               );

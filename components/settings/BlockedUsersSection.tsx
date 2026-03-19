@@ -4,8 +4,10 @@ import React from 'react';
 import { UserX, X } from 'lucide-react';
 import SettingsSection from './SettingsSection';
 import { useBlockedUsers } from '@/hooks/UseBlockedUser';
+import { useI18n } from '@/contexts/i18n-context';
 
 const BlockedUsersSection: React.FC = () => {
+  const { tr } = useI18n();
   const { blockedUsers, loading, error, handleUnblock } = useBlockedUsers();
 
   return (
@@ -25,7 +27,7 @@ const BlockedUsersSection: React.FC = () => {
 
       {/* Error */}
       {error && !loading && (
-        <div className="px-4 py-3 text-red-500 text-sm">{error}</div>
+        <div className="px-4 py-3 text-red-500 text-sm">{tr(error)}</div>
       )}
 
       {/* Empty state */}
@@ -35,7 +37,7 @@ const BlockedUsersSection: React.FC = () => {
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
               <UserX className="w-8 h-8 text-textGray" />
             </div>
-            <p className="text-textGray text-sm">No blocked users</p>
+            <p className="text-textGray text-sm">{tr('No blocked users')}</p>
           </div>
         </div>
       )}
@@ -70,7 +72,7 @@ const BlockedUsersSection: React.FC = () => {
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-textGray hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors shrink-0"
               >
                 <X className="w-3 h-3" />
-                Unblock
+                {tr('Unblock')}
               </button>
             </div>
           ))}

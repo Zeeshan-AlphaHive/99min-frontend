@@ -3,6 +3,7 @@
 import React, { useEffect, ReactNode } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { Button } from "@/components/ui";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   iconBgColor = "bg-[#DCFCE7]",
   iconColor = "text-[#00C853]",
 }) => {
+  const { tr } = useI18n();
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -68,7 +70,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
       className="shadow-md"
       onClick={buttonHref ? undefined : handleButtonClick}
     >
-      {buttonText}
+      {tr(buttonText)}
     </Button>
   );
 
@@ -91,12 +93,12 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
 
         {/* Title */}
         <h2 className="text-2xl font-extrabold text-textBlack text-center mb-3 ">
-          {title}
+          {tr(title)}
         </h2>
 
         {/* Description Text */}
         <div className="text-center text-textGray text-sm leading-relaxed mb-8 px-2 font-medium opacity-80">
-          {typeof description === 'string' ? <p>{description}</p> : description}
+          {typeof description === 'string' ? <p>{tr(description)}</p> : description}
         </div>
 
         {/* Action Button */}

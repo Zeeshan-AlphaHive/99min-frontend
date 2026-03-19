@@ -10,6 +10,7 @@ import SuccessModal from '@/components/shared/SuccessModal';
 import { Button } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useI18n } from '@/contexts/i18n-context';
 import {
   Select,
   SelectTrigger,
@@ -53,6 +54,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   isEditMode = false,
 }) => {
   const router = useRouter();
+  const { tr } = useI18n();
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
@@ -69,7 +71,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     const isImage = selectedFiles[0].type.startsWith('image');
 
     if (fileType && ((fileType === 'video' && isImage) || (fileType === 'image' && isVideo))) {
-      setFileError(`You can only upload ${fileType === 'video' ? 'videos' : 'images'}.`);
+      setFileError(tr(`You can only upload ${fileType === 'video' ? 'videos' : 'images'}.`));
       return;
     }
 
@@ -79,7 +81,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     }
 
     if (isImage && files.length + selectedFiles.length > 3) {
-      setFileError('You can only upload up to 3 images.');
+      setFileError(tr('You can only upload up to 3 images.'));
       return;
     }
 
@@ -121,13 +123,13 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     setSubmitError('');
 
     if (!formData.title || !formData.description || !formData.budget || !formData.location) {
-      alert('Please fill all required fields.');
+      alert(tr('Please fill all required fields.'));
       return;
     }
 
     // In edit mode, media upload is optional (existing media is kept server-side)
     if (!isEditMode && files.length === 0) {
-      alert('Please upload at least one image or video.');
+      alert(tr('Please upload at least one image or video.'));
       return;
     }
 
@@ -140,7 +142,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       }
       setIsSuccessModalOpen(true);
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Failed to post task. Please try again.';
+      const msg = error instanceof Error ? error.message : tr('Failed to post task. Please try again.');
       setSubmitError(msg);
     }
   };
@@ -155,16 +157,16 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     <form onSubmit={handleSubmit} className="bg-white px-6 py-8 pb-32">
 
       <Input
-        label="Task Title"
-        placeholder="Enter task title"
+        label={tr("Task Title")}
+        placeholder={tr("Enter task title")}
         value={formData.title}
         onChange={(e) => handleChange('title', e.target.value)}
         required
       />
 
       <Textarea
-        label="Description"
-        placeholder="Describe what you need help with..."
+        label={tr("Description")}
+        placeholder={tr("Describe what you need help with...")}
         value={formData.description}
         onChange={(e) => handleChange('description', e.target.value)}
         className="min-h-[120px]"
@@ -177,20 +179,20 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       />
 
       <Input
-        label="Budget"
+        label={tr("Budget")}
         icon={<DollarSign className="w-5 h-5" />}
         type="text"
-        placeholder="Enter budget e.g. 25 or 25-50"
+        placeholder={tr("Enter budget e.g. 25 or 25-50")}
         value={formData.budget}
         onChange={(e) => handleChange('budget', e.target.value)}
         required
       />
 
       <Input
-        label="Location"
+        label={tr("Location")}
         icon={<MapPin className="w-5 h-5" />}
         type="text"
-        placeholder="Enter location"
+        placeholder={tr("Enter location")}
         value={formData.location}
         onChange={(e) => handleChange('location', e.target.value)}
         required
@@ -199,16 +201,16 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <Input
-            label="Tags (Optional)"
+            label={tr("Tags (Optional)")}
             icon={<Tag className="w-5 h-5" />}
             type="text"
-            placeholder="Enter tags (comma separated)"
+            placeholder={tr("Enter tags (comma separated)")}
             value={formData.tags}
             onChange={(e) => handleChange('tags', e.target.value)}
           />
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-1">Task Duration</label>
+          <label className="block text-sm font-bold text-gray-900 mb-1">{tr("Task Duration")}</label>
           <Select
             value={formData.duration}
             onValueChange={(value) => handleChange('duration', value as FormData['duration'])}
@@ -217,11 +219,11 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <Clock className="w-5 h-5 text-gray-600" />
               </span>
-              <SelectValue placeholder="Select duration" />
+              <SelectValue placeholder={tr("Select duration")} />
             </SelectTrigger>
             <SelectContent className="w-full">
-              <SelectItem value="90_mins">90 Minutes</SelectItem>
-              <SelectItem value="24_hours">24 Hours</SelectItem>
+              <SelectItem value="90_mins">{tr("90 Minutes")}</SelectItem>
+              <SelectItem value="24_hours">{tr("24 Hours")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -230,11 +232,11 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       {/* Upload Media */}
       <div className="mb-6">
         <label className="block text-sm font-bold text-gray-900 mb-2">
-          Upload Media{' '}
+          {tr("Upload Media")}{" "}
           {!isEditMode && <span className="text-red-500">*</span>}
           {isEditMode && (
             <span className="text-gray-400 font-normal text-xs ml-1">
-              (leave empty to keep existing media)
+              {tr("(leave empty to keep existing media)")}
             </span>
           )}
         </label>
@@ -246,10 +248,10 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
           <CloudUpload className="w-10 h-10 text-gray-400 mb-2" />
           <span className="text-gray-500 text-sm">
             {fileType === 'video'
-              ? 'Video selected'
+              ? tr('Video selected')
               : fileType === 'image'
-              ? `${files.length} image(s) selected`
-              : 'Click to upload image or video'}
+              ? tr(`${files.length} image(s) selected`)
+              : tr('Click to upload image or video')}
           </span>
           <input
             id="file-upload"
@@ -301,11 +303,11 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
         variant="warning"
         message={
           <>
-            Your ad will be live for{' '}
+            {tr("Your ad will be live for")}{" "}
             <span className="font-bold">
-              {formData.duration === '90_mins' ? '90 minutes' : '24 hours'}
+              {formData.duration === '90_mins' ? tr('90 minutes') : tr('24 hours')}
             </span>{' '}
-            and then automatically expire. Make it count!
+            {tr("and then automatically expire. Make it count!")}
           </>
         }
       />
@@ -325,8 +327,12 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
             disabled={!isDirty}
           >
             {isEditMode
-              ? 'Update Ad'
-              : `Post Ad (Expires in ${formData.duration === '90_mins' ? '90 mins' : '24 hours'})`}
+              ? tr('Update Ad')
+              : tr(
+                  `Post Ad (Expires in ${
+                    formData.duration === '90_mins' ? '90 mins' : '24 hours'
+                  })`,
+                )}
           </Button>
         </div>
       </div>
@@ -341,11 +347,11 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
         title={isEditMode ? 'Ad Updated!' : 'Ad Posted!'}
         description={
           isEditMode ? (
-            <>Your task has been updated successfully.</>
+            <>{tr("Your task has been updated successfully.")}</>
           ) : (
             <>
-              Your ad is live and will expire in{' '}
-              {formData.duration === '90_mins' ? '90 minutes' : '24 hours'}.
+              {tr("Your ad is live and will expire in")}{" "}
+              {formData.duration === '90_mins' ? tr('90 minutes') : tr('24 hours')}.
             </>
           )
         }

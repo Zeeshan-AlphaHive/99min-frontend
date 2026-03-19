@@ -9,7 +9,7 @@ import { Button, OTPInput, IconContainer } from "@/components/ui";
 import { AuthPageLayout } from "./shared";
 import { authApi } from "@/utils/api/auth.api";
 import { otpSchema, OtpFormData } from "@/validators/auth-schema";
-import { useTranslations } from "next-intl";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface OtpModalProps {
   email?: string;
@@ -24,7 +24,7 @@ const OtpModal: React.FC<OtpModalProps> = ({
   onVerify,
   purpose = "signup",
 }) => {
-   const t = useTranslations();
+  const { tr } = useI18n();
   const [apiError, setApiError] = useState("");
   const [resendSeconds, setResendSeconds] = useState(55);
   const [canResend, setCanResend] = useState(false);
@@ -89,30 +89,77 @@ const OtpModal: React.FC<OtpModalProps> = ({
     }
   };
 
- return (
-    <AuthPageLayout backButtonOnClick={onBack} backButtonVariant="circular" contentMaxWidth="md" contentClassName="pt-4">
-      <IconContainer className="mb-6"><CheckCircle2 className="w-10 h-10 text-orange" strokeWidth={3} /></IconContainer>
-      <h1 className="text-3xl font-black text-textBlack mb-4 tracking-tight text-center">{t("auth.checkEmail")}</h1>
+  return (
+    <AuthPageLayout
+      backButtonOnClick={onBack}
+      backButtonVariant="circular"
+      contentMaxWidth="md"
+      contentClassName="pt-4"
+    >
+      <IconContainer className="mb-6">
+        <CheckCircle2 className="w-10 h-10 text-orange" strokeWidth={3} />
+      </IconContainer>
+
+      <h1 className="text-3xl font-black text-textBlack mb-4 tracking-tight text-center">
+        {tr("Check your email")}
+      </h1>
+
       <p className="text-center text-textGray text-sm font-medium mb-10">
-        {t("auth.verificationSent")} <b className="text-textBlack">{email}</b>
+        {tr("We sent a verification code to")}{" "}
+        <b className="text-textBlack">{email}</b>
       </p>
-      <label className="block text-textBlack text-xs font-bold mb-4 text-center w-full">{t("auth.enterVerificationCode")}</label>
+
+      <label className="block text-textBlack text-xs font-bold mb-4 text-center w-full">
+        {tr("Enter verification code")}
+      </label>
+
       <form onSubmit={handleSubmit(onSubmit)}>
-        <OTPInput length={6} onChange={handleOtpChange} onComplete={handleOtpChange} className="mb-2" />
-        {errors.otp && <p className="text-red-500 text-xs text-center mb-2">{errors.otp.message}</p>}
-        {apiError && <p className="text-red-500 text-sm text-center mb-4">{apiError}</p>}
+        <OTPInput
+          length={6}
+          onChange={handleOtpChange}
+          onComplete={handleOtpChange}
+          className="mb-2"
+        />
+
+        {/* Zod error for OTP format */}
+        {errors.otp && (
+          <p className="text-red-500 text-xs text-center mb-2">{tr(String(errors.otp.message))}</p>
+        )}
+
+        {/* API error */}
+        {apiError && (
+          <p className="text-red-500 text-sm text-center mb-4">{tr(apiError)}</p>
+        )}
+
         <div className="text-center text-textGray text-sm font-medium mb-8">
-          <p className="mb-1">{t("auth.didntReceive")}</p>
-          {canResend
-            ? <button type="button" onClick={handleResend} className="text-orange font-semibold underline">{t("auth.resendCode")}</button>
-            : <p className="text-textGray opacity-70">{t("auth.resendIn")} {resendSeconds}s</p>}
+          <p className="mb-1">{tr("Didn't receive the code?")}</p>
+          {canResend ? (
+            <button
+              type="button"
+              onClick={handleResend}
+              className="text-orange font-semibold underline"
+            >
+              {tr("Resend code")}
+            </button>
+          ) : (
+            <p className="text-textGray opacity-70">
+              {tr("Resend in")} {resendSeconds}s
+            </p>
+          )}
         </div>
-        <Button type="submit" variant="primary" size="md" fullWidth disabled={!isValid || isSubmitting}>
-          {isSubmitting ? t("auth.verifying") : t("auth.verifyCode")}
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          fullWidth
+          disabled={!isValid || isSubmitting}
+        >
+          {isSubmitting ? tr("Verifying...") : tr("Verify Code")}
         </Button>
       </form>
     </AuthPageLayout>
   );
 };
- 
+
 export default OtpModal;

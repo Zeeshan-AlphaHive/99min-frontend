@@ -3,6 +3,7 @@
 import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ApiConversation } from "@/utils/api/message.api";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface MessageThreadCardProps {
   conversation: ApiConversation;
@@ -13,6 +14,7 @@ const MessageThreadCard: React.FC<MessageThreadCardProps> = ({
   conversation,
   onClick,
 }) => {
+  const { tr } = useI18n();
   const { otherParticipant, lastMessage, unreadCount, isOnline } = conversation;
   const hasUnread = unreadCount > 0;
 
@@ -50,7 +52,7 @@ const MessageThreadCard: React.FC<MessageThreadCardProps> = ({
             {otherParticipant.name}
           </h3>
           <div className="flex items-center gap-2 shrink-0 ml-2">
-            <span className="text-textGray text-xs">{timestamp}</span>
+            <span className="text-textGray text-xs">{tr(timestamp)}</span>
             {hasUnread && (
               <div className="w-5 h-5 bg-orange rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">
@@ -65,7 +67,7 @@ const MessageThreadCard: React.FC<MessageThreadCardProps> = ({
             hasUnread ? "text-textBlack font-medium" : "text-textGray"
           }`}
         >
-          {lastMessage?.body ?? "No messages yet"}
+          {lastMessage?.body ?? tr("No messages yet")}
         </p>
       </div>
     </button>

@@ -3,25 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Search,
-  MessageCircle,
-  Bell,
-  User,
-  Menu,
-  X,
-  MessageSquare,
-  Globe2,
-} from "lucide-react";
+import { Bell, User, Menu, X, MessageSquare } from "lucide-react";
 import TicketBadge from "./TicketBadge";
 import LanguageDropdown from "./LanguageDropdown";
+import { useI18n } from "@/contexts/i18n-context";
 
-interface NavLink {
-  href: string;
-  label: string;
-}
-
-const navLinks: NavLink[] = [
+const navLinks: { href: string; label: string }[] = [
   { href: "/dashboard/explore", label: "Explore/Home" },
   { href: "/dashboard/create", label: "Create" },
   { href: "/dashboard/subscriptions", label: "Subscriptions" },
@@ -29,8 +16,8 @@ const navLinks: NavLink[] = [
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
+  const { tr } = useI18n();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40">
@@ -68,7 +55,7 @@ const Navbar: React.FC = () => {
               : "text-textGray hover:text-textBlack font-medium"
           }`}
                 >
-                  {link.label}
+                  {tr(link.label)}
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange"></span>
                   )}
@@ -191,7 +178,7 @@ const Navbar: React.FC = () => {
                           : "text-textGray hover:text-textBlack hover:bg-gray-50"
                       }`}
                   >
-                    {link.label}
+                    {tr(link.label)}
                   </Link>
                 );
               })}

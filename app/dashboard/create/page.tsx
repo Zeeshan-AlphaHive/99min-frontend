@@ -6,10 +6,12 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import CreateTaskHeader from "@/components/create/CreateTaskHeader";
 import CreateTaskForm, { FormData } from "@/components/create/CreateTaskForm";
 import { useCreateTask, useUpdateTask, useUploadMedia } from "@/hooks/UseTasks";
+import { useI18n } from "@/contexts/i18n-context";
 
 const CreateTaskPage: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { tr } = useI18n();
 
   // ─── Edit mode: read prefilled data from URL search params ────────────────
   // ExplorePage encodes the task fields into the URL when navigating here.
@@ -89,13 +91,17 @@ const CreateTaskPage: React.FC = () => {
 
         {error && (
           <p className="text-red-500 text-sm text-center py-2">
-            {error instanceof Error ? error.message : "Something went wrong"}
+            {error instanceof Error ? error.message : tr("Something went wrong")}
           </p>
         )}
 
         {isPending && (
           <p className="text-textGray text-sm text-center py-2">
-            {uploading ? "Uploading media…" : isEditMode ? "Updating task…" : "Creating task…"}
+            {uploading
+              ? tr("Uploading media…")
+              : isEditMode
+                ? tr("Updating task…")
+                : tr("Creating task…")}
           </p>
         )}
 

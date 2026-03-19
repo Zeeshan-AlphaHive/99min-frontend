@@ -3,6 +3,7 @@
 import React from 'react';
 import { MapPin, Tag, MessageCircle, LucideIcon, MessageSquare } from 'lucide-react';
 import TaskDetailCard from './TaskDetailCard';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface TaskDetailCardsProps {
   location: string;
@@ -17,21 +18,22 @@ interface CardData {
 }
 
 const TaskDetailCards: React.FC<TaskDetailCardsProps> = ({ location, category, interest }) => {
+  const { tr } = useI18n();
   const cards: CardData[] = [
     {
       icon: MapPin,
-      label: 'Location',
+      label: tr('Location'),
       value: location,
     },
     {
       icon: Tag,
-      label: 'Category',
+      label: tr('Category'),
       value: category,
     },
     {
       icon: MessageSquare ,
-      label: 'Responses',
-      value: `${interest} active`,
+      label: tr('Responses'),
+      value: tr(`${interest} active`),
     },
   ];
 

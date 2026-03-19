@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ReactNode } from 'react';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface ContactSupportCardProps {
   icon: ReactNode;
@@ -15,6 +16,8 @@ const ContactSupportCard: React.FC<ContactSupportCardProps> = ({
   description,
   onClick,
 }) => {
+  const { tr } = useI18n();
+  const descriptionText = description.includes("@") ? description : tr(description);
   return (
     <button
       onClick={onClick}
@@ -22,8 +25,8 @@ const ContactSupportCard: React.FC<ContactSupportCardProps> = ({
     >
       <div className="text-orange shrink-0 bg-iconBg rounded-xl p-2   "><span className="">{icon}</span></div>
       <div className="flex-1">
-        <h4 className="text-textBlack font-bold mb-1">{title}</h4>
-        <p className="text-textGray text-sm">{description}</p>
+        <h4 className="text-textBlack font-bold mb-1">{tr(title)}</h4>
+        <p className="text-textGray text-sm">{descriptionText}</p>
       </div>
     </button>
   );

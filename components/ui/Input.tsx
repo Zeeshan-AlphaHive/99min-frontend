@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState, ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -20,8 +23,10 @@ const Input: React.FC<InputProps> = ({
   iconPosition = 'left',
   className = '',
   id,
+  placeholder,
   ...props
 }) => {
+  const { tr } = useI18n();
   const [showPassword, setShowPassword] = useState(false);
   const inputType = showPasswordToggle && type === 'password' 
     ? (showPassword ? 'text' : 'password') 
@@ -64,7 +69,7 @@ const Input: React.FC<InputProps> = ({
           htmlFor={inputId} 
           className="block text-textBlack text-sm font-bold mb-2 ml-1"
         >
-          {label}
+          {tr(label)}
         </label>
       )}
       <div className="relative">
@@ -77,6 +82,7 @@ const Input: React.FC<InputProps> = ({
           id={inputId}
           type={inputType}
           className={`${baseClasses} ${variantClasses[variant]} ${borderClass} ${paddingClasses} ${className}`}
+          placeholder={placeholder !== undefined ? tr(placeholder) : undefined}
           {...props}
         />
         {icon && iconPosition === 'right' && (
@@ -89,7 +95,7 @@ const Input: React.FC<InputProps> = ({
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute inset-y-0 right-0 px-4 flex items-center cursor-pointer hover:opacity-70"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? tr('Hide password') : tr('Show password')}
           >
             {showPassword ? (
               <EyeOff className="w-5 h-5 text-gray" />
@@ -100,7 +106,7 @@ const Input: React.FC<InputProps> = ({
         )}
       </div>
       {error && (
-        <p className="text-red-500 text-xs mt-1 ml-1">{error}</p>
+        <p className="text-red-500 text-xs mt-1 ml-1">{tr(error)}</p>
       )}
     </div>
   );

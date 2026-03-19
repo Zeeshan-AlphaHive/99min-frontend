@@ -9,6 +9,7 @@ import ProfileForm from "./ProfileForm";
 import { useProfile } from "@/hooks/UseProfile";
 import { profileQueryKey } from "@/hooks/UseProfile";
 import { UpdateProfilePayload, uploadAvatar, deleteAvatar  } from "@/utils/api/settings.api";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface ProfilePageProps {
   onBack?: () => void;
@@ -23,6 +24,7 @@ function formatDobForInput(dob: string | Date | undefined | null): string {
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, onSubmit }) => {
+  const { tr } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { profile, loading, saving, error, handleUpdateProfile } = useProfile();
@@ -97,7 +99,7 @@ const handleDeleteAvatar = async () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {(error || avatarError) && (
           <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg">
-            {error || avatarError}
+            {tr(error || avatarError || "")}
           </div>
         )}
 

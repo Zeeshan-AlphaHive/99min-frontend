@@ -5,12 +5,14 @@ import PageHeader from "@/components/shared/PageHeader";
 import SettingsSection from "./SettingsSection";
 import NotificationToggle from "./NotificationToggle";
 import { useNotificationSettings } from "@/hooks/UseNotificationSetting";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface NotificationsPageProps {
   onBack?: () => void;
 }
 
 const NotificationsPage: React.FC<NotificationsPageProps> = ({ onBack }) => {
+  const { tr } = useI18n();
   const { settings, loading, error, handleToggle } = useNotificationSettings();
 
   if (loading) {
@@ -32,7 +34,7 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ onBack }) => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg">{tr(error)}</div>
         )}
 
         {/* REMOVED: saving banner — toggles are optimistic, no banner needed */}

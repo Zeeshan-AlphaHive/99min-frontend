@@ -3,6 +3,7 @@
 import React, { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface PageHeaderProps {
   title: string;
@@ -28,6 +29,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   maxWidth = '4xl',
 }) => {
   const router = useRouter();
+  const { tr } = useI18n();
 
   const handleBack = () => {
     if (onBack) {
@@ -45,11 +47,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <button
               onClick={handleBack}
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-              aria-label="Go back"
+              aria-label={tr('Go back')}
             >
               <ArrowLeft className="w-6 h-6 text-textBlack" />
             </button>
-            <h1 className="text-lg font-bold text-center w-full text-textBlack">{title}</h1>
+            <h1 className="text-lg font-bold text-center w-full text-textBlack">{tr(title)}</h1>
           </div>
           {rightContent && <div>{rightContent}</div>}
         </div>

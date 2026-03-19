@@ -13,12 +13,14 @@ import { Button } from "@/components/ui";
 import { usePrivacySettings } from "@/hooks/UsePrivacySetting";
 import { deleteMyAccount } from "@/utils/api/account-action.api";
 import { downloadMyData } from "@/utils/api/account-action.api";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface PrivacyPageProps {
   onBack?: () => void;
 }
 
 const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
+  const { tr } = useI18n();
   const router = useRouter();
   const { settings, loading, error, handleUpdate } = usePrivacySettings();
 
@@ -66,7 +68,7 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {(error || actionError) && (
           <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
-            {error || actionError}
+            {tr(error || actionError || "")}
           </div>
         )}
 
@@ -154,7 +156,7 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
               disabled={isDownloading}
               className="w-full px-4 bg-inputBg py-4 rounded-xl text-left text-textBlack font-medium hover:text-orange transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isDownloading ? "Preparing download…" : "Download My Data"}
+              {isDownloading ? tr("Preparing download…") : tr("Download My Data")}
             </button>
             <Button
               variant="secondary"
@@ -165,7 +167,7 @@ const PrivacyPage: React.FC<PrivacyPageProps> = ({ onBack }) => {
               className="bg-lightRed text-red text-start hover:bg-red-50 border-0 disabled:opacity-50"
             >
               <span className="text-red">
-                {isDeleting ? "Deleting…" : "Delete My Account"}
+                {isDeleting ? tr("Deleting…") : tr("Delete My Account")}
               </span>
             </Button>
           </div>

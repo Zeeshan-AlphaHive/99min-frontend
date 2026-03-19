@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface NotificationToggleProps {
   label: string;
@@ -15,11 +16,12 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({
   enabled,
   onChange,
 }) => {
+  const { tr } = useI18n();
   return (
     <div className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0">
       <div className="flex-1">
-        <h4 className="text-textBlack font-medium mb-1">{label}</h4>
-        <p className="text-textGray text-sm">{description}</p>
+        <h4 className="text-textBlack font-medium mb-1">{tr(label)}</h4>
+        <p className="text-textGray text-sm">{tr(description)}</p>
       </div>
       <button
         type="button"
