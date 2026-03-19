@@ -15,20 +15,24 @@ export interface Plan {
   pricePeriod: string;
   features: PlanFeature[];
   isCurrent?: boolean;
+  isDowngrade?: boolean; // true when this plan is lower than the current one
 }
 
 interface PlanCardProps {
   plan: Plan;
   onUpgrade?: (planId: string) => void;
+  onDowngrade?: (planId: string) => void;
   upgradeLoading?: boolean;
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({
   plan,
   onUpgrade,
+  onDowngrade,
   upgradeLoading = false,
 }) => {
-  const isCurrent = plan.isCurrent || false;
+  const isCurrent  = plan.isCurrent  ?? false;
+  const isDowngrade = plan.isDowngrade ?? false;
 
   return (
     <div
@@ -73,6 +77,19 @@ const PlanCard: React.FC<PlanCardProps> = ({
         <Button variant="secondary" size="md" fullWidth disabled>
           Current Plan
         </Button>
+      ) : isDowngrade ? (
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          disabled={upgradeLoading}
+          onClick={() => onDowngrade?.(plan.id)}
+        >
+          {upgradeLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin mr-2 inline-block" />
+          ) : null}
+          Downgrade to {plan.name}
+        </Button>
       ) : (
         <Button
           variant="primary"
@@ -81,9 +98,9 @@ const PlanCard: React.FC<PlanCardProps> = ({
           disabled={upgradeLoading}
           onClick={() => onUpgrade?.(plan.id)}
         >
-          {upgradeLoading && (
+          {upgradeLoading ? (
             <Loader2 className="w-4 h-4 animate-spin mr-2 inline-block" />
-          )}
+          ) : null}
           Upgrade to {plan.name}
         </Button>
       )}

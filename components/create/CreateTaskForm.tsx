@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DollarSign, MapPin, Tag, CloudUpload, Check, Clock, X } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -101,6 +101,19 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  // ─── Dirty check: true when something has changed from initialData ─────────
+  const isDirty = useMemo(() => {
+    if (!isEditMode) return true; // always "dirty" in create mode
+
+    const base: FormData = { ...defaultFormData, ...initialData };
+
+    const fieldsChanged = (Object.keys(base) as (keyof FormData)[]).some(
+      (key) => formData[key] !== base[key]
+    );
+
+    return fieldsChanged || files.length > 0;
+  }, [isEditMode, initialData, formData, files]);
 
   // ─── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -304,7 +317,13 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       {/* Submit Button */}
       <div className="bg-white border-t border-gray-200 p-4 z-30">
         <div className="max-w-7xl mx-auto">
-          <Button type="submit" variant="primary" size="lg" fullWidth>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={!isDirty}
+          >
             {isEditMode
               ? 'Update Ad'
               : `Post Ad (Expires in ${formData.duration === '90_mins' ? '90 mins' : '24 hours'})`}
