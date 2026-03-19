@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
 }) => {
+  const { tr } = useI18n();
+
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -76,12 +79,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
           {/* Title */}
           <h2 className="text-xl font-bold text-textBlack text-center mb-3">
-            {title}
+            {tr(title)}
           </h2>
 
           {/* Body Text */}
           <p className="text-textGray text-center mb-6">
-            {description}
+            {tr(description)}
           </p>
 
           {/* Action Buttons */}
@@ -93,7 +96,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               onClick={onClose}
               className="border border-gray-200 bg-white text-textBlack hover:bg-gray-50"
             >
-              {cancelText}
+              {tr(cancelText)}
             </Button>
             <Button
               variant="primary"
@@ -102,7 +105,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               onClick={handleConfirm}
               className="bg-orange hover:bg-orangeHover"
             >
-              {confirmText}
+              {tr(confirmText)}
             </Button>
           </div>
         </div>

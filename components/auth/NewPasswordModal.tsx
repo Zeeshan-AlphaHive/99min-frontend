@@ -9,6 +9,7 @@ import { Button, Input, IconContainer } from "@/components/ui";
 import { AuthPageLayout, PasswordStrengthMeter, PasswordRequirements } from "./shared";
 import { authApi } from "@/utils/api/auth.api";
 import { resetPasswordSchema, ResetPasswordFormData } from "@/validators/auth-schema";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface NewPasswordModalProps {
   email: string;
@@ -21,6 +22,7 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({
   onBack,
   onSubmit,
 }) => {
+  const { tr } = useI18n();
   const [apiError, setApiError] = useState("");
 
   const {
@@ -61,11 +63,11 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({
       </IconContainer>
 
       <h1 className="text-3xl font-black text-textBlack mb-3 tracking-tight text-center">
-        Create new password
+        {tr("Create new password")}
       </h1>
 
       <p className="text-center text-textGray text-sm mb-8 leading-relaxed max-w-xs mx-auto opacity-80">
-        Your new password must be different from previously used passwords
+        {tr("Your new password must be different from previously used passwords")}
       </p>
 
       <form className="w-full" onSubmit={handleSubmit(onFormSubmit)}>
@@ -81,7 +83,7 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({
             {...register("newPassword")}
           />
           {errors.newPassword && (
-            <p className="text-red-500 text-xs mt-1">{errors.newPassword.message}</p>
+            <p className="text-red-500 text-xs mt-1">{tr(String(errors.newPassword.message))}</p>
           )}
         </div>
 
@@ -99,14 +101,14 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({
             {...register("confirmPassword")}
           />
           {errors.confirmPassword && (
-            <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+            <p className="text-red-500 text-xs mt-1">{tr(String(errors.confirmPassword.message))}</p>
           )}
         </div>
 
         <PasswordRequirements password={newPasswordValue} />
 
         {apiError && (
-          <p className="text-red-500 text-sm text-center mb-4">{apiError}</p>
+          <p className="text-red-500 text-sm text-center mb-4">{tr(apiError)}</p>
         )}
 
         <Button
@@ -116,7 +118,7 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({
           fullWidth
           disabled={!isValid || isSubmitting}
         >
-          {isSubmitting ? "Resetting..." : "Reset Password"}
+          {isSubmitting ? tr("Resetting...") : tr("Reset Password")}
         </Button>
       </form>
     </AuthPageLayout>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import Input from '@/components/ui/Input';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface AddPaymentMethodModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ const AddPaymentMethodModal: React.FC<AddPaymentMethodModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { tr } = useI18n();
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
@@ -90,8 +92,8 @@ const AddPaymentMethodModal: React.FC<AddPaymentMethodModalProps> = ({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
       <div ref={modalRef} className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-textBlack">Add Card</h2>
-          <button onClick={handleClose} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="Close">
+          <h2 className="text-xl font-bold text-textBlack">{tr('Add Card')}</h2>
+          <button onClick={handleClose} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label={tr('Close')}>
             <X className="w-5 h-5 text-textBlack" />
           </button>
         </div>
@@ -106,7 +108,7 @@ const AddPaymentMethodModal: React.FC<AddPaymentMethodModalProps> = ({
           <div className="mb-6">
             <Input label="Cardholder Name" type="text" value={cardholderName} onChange={(e) => setCardholderName(e.target.value)} placeholder="John Doe" required />
           </div>
-          <Button type="submit" variant="primary" size="lg" fullWidth>Add Card</Button>
+          <Button type="submit" variant="primary" size="lg" fullWidth>{tr('Add Card')}</Button>
         </form>
       </div>
     </div>

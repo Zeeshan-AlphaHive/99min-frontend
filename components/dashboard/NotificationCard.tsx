@@ -3,6 +3,7 @@
 import React from "react";
 import { Bell, MessageSquare, Clock, InfoIcon, CheckCheck } from "lucide-react";
 import { ApiNotification } from "@/utils/api/notification.api";
+import { useI18n } from "@/contexts/i18n-context";
 
 // Map API types → display config
 const NOTIFICATION_CONFIG: Record<
@@ -64,6 +65,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   notification,
   onClick,
 }) => {
+  const { tr } = useI18n();
   const config = NOTIFICATION_CONFIG[notification.type] ?? NOTIFICATION_CONFIG.system;
   const isUnread = !notification.read;
 
@@ -85,9 +87,9 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <h4 className="text-textBlack font-bold mb-1">{notification.title}</h4>
-        <p className="text-textGray text-sm mb-1 line-clamp-2">{notification.body}</p>
-        <p className="text-textGray text-xs">{timeAgo(notification.createdAt)}</p>
+        <h4 className="text-textBlack font-bold mb-1">{tr(notification.title)}</h4>
+        <p className="text-textGray text-sm mb-1 line-clamp-2">{tr(notification.body)}</p>
+        <p className="text-textGray text-xs">{tr(timeAgo(notification.createdAt))}</p>
       </div>
 
       {/* Unread dot */}

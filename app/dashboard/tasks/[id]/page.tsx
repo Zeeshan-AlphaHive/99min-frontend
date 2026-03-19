@@ -8,6 +8,7 @@ import { useAuth } from "@/store/auth-context";
 import { request } from "@/utils/api/client";
 import type { ApiTask } from "@/utils/api/tasks.api";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/contexts/i18n-context";
 
 function formatTimeLeft(expiresAt: string): string {
   const diff = new Date(expiresAt).getTime() - Date.now();
@@ -32,6 +33,7 @@ export default function TaskDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { tr } = useI18n();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["task", id],
@@ -58,7 +60,7 @@ export default function TaskDetailPage() {
             onClick={() => router.back()}
             className="text-orange underline text-sm"
           >
-            Go back
+            {tr("Go back")}
           </button>
         </div>
       </DashboardLayout>

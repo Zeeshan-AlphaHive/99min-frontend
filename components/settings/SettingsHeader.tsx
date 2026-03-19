@@ -1,14 +1,17 @@
 "use client";
+
 import React from 'react';
-import { useTranslations } from 'next-intl';
+import { useI18n } from '@/contexts/i18n-context';
 
 const SettingsHeader: React.FC = () => {
-  const t = useTranslations();
+  const { tr } = useI18n();
   return (
-    <div className="bg-white p-4 border-b border-lightGrey">
-      <h1 className="text-3xl font-black text-textBlack mb-2">{t("settings.title")}</h1>
-      <p className="text-textGray text-base">{t("settings.subtitle")}</p>
+    <div className=" bg-white p-4 border-b border-lightGrey">
+      <h1 className="text-3xl font-black text-textBlack mb-2">{tr("Settings")}</h1>
+      <p className="text-textGray text-base">{tr("Manage your account")}</p>
     </div>
   );
 };
+
 export default SettingsHeader;
+

@@ -1,6 +1,9 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui";
+import { useI18n } from '@/contexts/i18n-context';
 
 interface AuthFormFooterProps {
   question: string;
@@ -15,12 +18,13 @@ const AuthFormFooter: React.FC<AuthFormFooterProps> = ({
   linkHref,
   className = '',
 }) => {
+  const { tr } = useI18n();
   return (
     <div className={`text-center text-textGray text-sm font-normal ${className}`}>
-      {question}{' '}
+      {tr(question)}{' '}
       <Link href={linkHref}>
         <Button type="button" variant="link" size="sm" className="ml-1">
-          {linkText}
+          {tr(linkText)}
         </Button>
       </Link>
     </div>

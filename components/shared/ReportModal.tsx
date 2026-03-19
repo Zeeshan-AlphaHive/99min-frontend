@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
   type,
   userName,
 }) => {
+  const { tr } = useI18n();
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [details, setDetails] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
@@ -108,7 +110,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red" />
-            <h2 className="text-xl font-bold text-textBlack">{title}</h2>
+            <h2 className="text-xl font-bold text-textBlack">{tr(title)}</h2>
           </div>
           <button
             onClick={onClose}
@@ -124,14 +126,14 @@ const ReportModal: React.FC<ReportModalProps> = ({
           <div className="bg-lightRed border border-red rounded-xl p-4 mb-6 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-darkRed shrink-0 mt-0.5" />
             <p className="text-sm text-darkRed leading-relaxed">
-              {bannerText}
+              {tr(bannerText)}
             </p>
           </div>
 
           {/* Reason Selection */}
           <div className="mb-6">
             <h3 className="text-textBlack font-bold text-base mb-4">
-              {questionText}
+              {tr(questionText)}
             </h3>
             <div className={`grid ${type === 'ad' ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
               {reasons.map((reason) => {
@@ -147,7 +149,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                           : 'bg-white border border-gray-200 text-textBlack hover:bg-gray-50'
                       }`}
                   >
-                    {reason}
+                    {tr(reason)}
                   </button>
                 );
               })}
@@ -157,12 +159,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
           {/* Additional Details */}
           <div className="mb-6">
             <h3 className="text-textBlack font-bold text-base mb-3">
-              {detailsLabel}
+              {tr(detailsLabel)}
             </h3>
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder={detailsPlaceholder}
+              placeholder={tr(detailsPlaceholder)}
               className="w-full h-32 px-4 py-3 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-textBlack placeholder:text-textGray resize-none"
             />
           </div>
@@ -177,7 +179,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
             onClick={onClose}
             className="border border-gray-200"
           >
-            Cancel
+            {tr("Cancel")}
           </Button>
           <Button
             variant="primary"
@@ -187,7 +189,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
             disabled={!selectedReason}
             className="bg-red hover:bg-red disabled:bg-lightGrey disabled:cursor-not-allowed"
           >
-            {submitButtonText}
+            {tr(submitButtonText)}
           </Button>
         </div>
       </div>

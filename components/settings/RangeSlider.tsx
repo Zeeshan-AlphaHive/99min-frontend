@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface RangeSliderProps {
   min: number;
@@ -23,13 +24,14 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
   maxLabel,
   unit = 'mi',
 }) => {
+  const { tr } = useI18n();
   const percentage = ((value - min) / (max - min)) * 100;
 
   return (
     <div>
       {label && (
         <label className="block text-textGray text-sm font-medium mb-2">
-          {label}
+          {tr(label)}
         </label>
       )}
       <div className="flex items-center gap-4 mb-2">
@@ -47,12 +49,12 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
           />
         </div>
         <span className="text-orange font-bold text-sm min-w-[70px] text-right">
-          {value} {unit}
+          {value} {tr(unit)}
         </span>
       </div>
       <div className="flex justify-between text-textGray text-xs">
-        <span>{minLabel || `${min} ${unit}`}</span>
-        <span>{maxLabel || `${max} ${unit}`}</span>
+        <span>{minLabel ? tr(minLabel) : `${min} ${tr(unit)}`}</span>
+        <span>{maxLabel ? tr(maxLabel) : `${max} ${tr(unit)}`}</span>
       </div>
     </div>
   );

@@ -9,12 +9,14 @@ import RangeSlider from "./RangeSlider";
 import QuickSelectButtons from "./QuickSelectButtons";
 import { Navigation, MapPin } from "lucide-react";
 import { useLocationSettings } from "@/hooks/UseLocationSetting";
+import { useI18n } from "@/contexts/i18n-context";
 
 interface LocationPageProps {
   onBack?: () => void;
 }
 
 const LocationPage: React.FC<LocationPageProps> = ({ onBack }) => {
+  const { tr } = useI18n();
   const { settings, loading, error, handleUpdate } = useLocationSettings();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,7 +51,7 @@ const LocationPage: React.FC<LocationPageProps> = ({ onBack }) => {
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {error && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{error}</div>
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{tr(error)}</div>
         )}
 
         <div>

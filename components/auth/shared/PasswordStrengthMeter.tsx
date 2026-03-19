@@ -1,5 +1,8 @@
+"use client";
+
 import React from 'react';
 import { calculatePasswordStrength } from '@/utils/password';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface PasswordStrengthMeterProps {
   password: string;
@@ -10,6 +13,7 @@ const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
   password,
   className = '',
 }) => {
+  const { tr } = useI18n();
   if (!password) return null;
 
   const strength = calculatePasswordStrength(password);
@@ -17,13 +21,13 @@ const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
   return (
     <div className={`mb-6 mt-2 ${className}`}>
       <div className="flex justify-between items-center mb-2 px-1">
-        <span className="text-textGray text-xs font-medium opacity-80">Password strength</span>
+        <span className="text-textGray text-xs font-medium opacity-80">{tr('Password strength')}</span>
         <span className={`text-xs font-bold ${
           strength.strength === 'weak' ? 'text-red-500' :
           strength.strength === 'medium' ? 'text-yellow-500' :
           'text-green-500'
         }`}>
-          {strength.label}
+          {tr(strength.label)}
         </span>
       </div>
       <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">

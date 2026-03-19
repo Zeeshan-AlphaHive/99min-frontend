@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode } from 'react';
-import NotificationToggle from './NotificationToggle';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface LocationToggleCardProps {
   icon: ReactNode;
@@ -18,6 +18,7 @@ const LocationToggleCard: React.FC<LocationToggleCardProps> = ({
   enabled,
   onChange,
 }) => {
+  const { tr } = useI18n();
   return (
     <div className="bg-white border border-lightGrey rounded-xl p-4 flex items-center gap-4">
       <div className="w-10 h-10 bg-iconBg rounded-lg flex items-center justify-center shrink-0 ">
@@ -26,8 +27,8 @@ const LocationToggleCard: React.FC<LocationToggleCardProps> = ({
         </div>
       </div>
       <div className="flex-1">
-        <h4 className="text-textBlack font-bold mb-1">{title}</h4>
-        <p className="text-textGray text-sm">{description}</p>
+        <h4 className="text-textBlack font-bold mb-1">{tr(title)}</h4>
+        <p className="text-textGray text-sm">{tr(description)}</p>
       </div>
       <button
         type="button"

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MoreVertical } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import TaskDetailsMenu from './TaskDetailsMenu';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface TaskDetailsHeaderProps {
   onBack: () => void;
@@ -14,6 +15,7 @@ interface TaskDetailsHeaderProps {
 const TaskDetailsHeader: React.FC<TaskDetailsHeaderProps> = ({ onBack, onReport, onShare }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { tr } = useI18n();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,7 +40,7 @@ const handleShare = () => {
 
   return (
     <PageHeader
-      title="Task Details"
+      title={tr("Task Details")}
       onBack={onBack}
       maxWidth="7xl"
       // rightContent={

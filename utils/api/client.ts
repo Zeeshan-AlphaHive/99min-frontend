@@ -70,7 +70,7 @@ export async function request<T>(
 
     if (!refreshed) {
       // Refresh cookie also expired — send to login
-      window.location.href = "/login";
+      window.location.href = "/auth/login";
       throw new Error("Session expired. Please log in again.");
     }
 

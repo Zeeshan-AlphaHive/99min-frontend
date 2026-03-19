@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface QuickSelectButtonsProps {
   options: number[];
@@ -15,6 +16,7 @@ const QuickSelectButtons: React.FC<QuickSelectButtonsProps> = ({
   onChange,
   unit = 'mi',
 }) => {
+  const { tr } = useI18n();
   return (
     <div className="flex gap-3">
       {options.map((option) => {
@@ -30,7 +32,7 @@ const QuickSelectButtons: React.FC<QuickSelectButtonsProps> = ({
                 : 'bg-inputBg text-textBlack  hover:bg-gray-50'
             }`}
           >
-            {option} {unit}
+            {option} {tr(unit)}
           </button>
         );
       })}
