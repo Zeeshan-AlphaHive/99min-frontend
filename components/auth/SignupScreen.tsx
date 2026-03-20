@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@/components/ui";
 import { AuthPageLayout, AuthHeader, AuthFormFooter } from "./shared";
+import { Toast } from "@/components/ui/Toast";
 import OtpModal from "@/components/auth/OtpModal";
 import { authApi } from "@/utils/api/auth.api";
 import { signupSchema, SignupFormData } from "@/validators/auth-schema";
@@ -14,12 +15,18 @@ import { useI18n } from "@/contexts/i18n-context";
 
 type SignupStep = "form" | "otp";
 
+interface ToastState {
+  message: string;
+  type: "error" | "success" | "warning";
+}
+
 const SignupScreen: React.FC = () => {
   const { tr } = useI18n();
   const router = useRouter();
-  const [step, setStep] = useState<SignupStep>("form");
-  const [email, setEmailState] = useState(""); // keep email for OTP step
-  const [apiError, setApiError] = useState("");
+  const t = useTranslations();
+  const [step, setStep] = useState<"form" | "otp">("form");
+  const [email, setEmailState] = useState("");
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   const {
     register,
@@ -31,43 +38,53 @@ const SignupScreen: React.FC = () => {
     mode: "onChange", // validate as user types
   });
 
+  const showToast = (message: string, type: ToastState["type"] = "error") => {
+    setToast(null);
+    setTimeout(() => setToast({ message, type }), 10);
+  };
+
   const onSubmit = async (data: SignupFormData) => {
-    setApiError("");
     try {
       await authApi.signup({ name: data.name.trim(), email: data.email, password: data.password });
-      setEmailState(data.email); // save for OTP modal
+      setEmailState(data.email);
       setStep("otp");
     } catch (err: unknown) {
-      setApiError(err instanceof Error ? err.message : "Signup failed");
+      const message = err instanceof Error ? err.message : "";
+
+      if (message.includes("already exists") || message.includes("already registered")) {
+        showToast("An account with this email already exists. Please log in.", "warning");
+      } else if (message.includes("valid email") || message.includes("invalid email")) {
+        showToast("Please enter a valid email address.", "error");
+      } else if (message.includes("6 characters") || message.includes("too short")) {
+        showToast("Password must be at least 6 characters.", "error");
+      } else if (message.includes("required") || message.includes("All fields")) {
+        showToast("Please fill in all required fields.", "error");
+      } else {
+        showToast(message || t("auth.signupFailed"), "error");
+      }
     }
   };
 
-  const handleBack = () => {
-    if (step === "otp") setStep("form");
-    else router.push("/");
-  };
-
-  if (step === "otp") {
-    return (
-      <OtpModal
-        email={email}
-        onBack={handleBack}
-        onVerify={() => router.push("/auth/login")}
-        purpose="signup"
-      />
-    );
-  }
+  if (step === "otp") return (
+    <OtpModal
+      email={email}
+      onBack={() => setStep("form")}
+      onVerify={() => router.push("/auth/login")}
+      purpose="signup"
+    />
+  );
 
   return (
     <AuthPageLayout backButtonHref="/" contentMaxWidth="sm">
-      <AuthHeader
-        title="Create Account"
-        subtitle="Join 99min to start posting tasks"
-        ticketSize="sm"
-        titleSize="2xl"
-        className="mb-6"
-      />
-
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={5000}
+          onClose={() => setToast(null)}
+        />
+      )}
+      <AuthHeader title={t("auth.createAccount")} subtitle={t("auth.joinSubtitle")} ticketSize="sm" titleSize="2xl" className="mb-6" />
       <form className="w-full space-y-4" onSubmit={handleSubmit(onSubmit)}>
 
         {/* Name */}
@@ -127,12 +144,6 @@ const SignupScreen: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{tr(String(errors.confirmPassword.message))}</p>
           )}
         </div>
-
-        {/* API error */}
-        {apiError && (
-          <p className="text-red-500 text-sm text-center">{tr(apiError)}</p>
-        )}
-
         <div className="pt-4">
           <Button
             type="submit"
@@ -144,18 +155,9 @@ const SignupScreen: React.FC = () => {
             {isSubmitting ? tr("Creating Account...") : tr("Create Account")}
           </Button>
         </div>
-
-        <AuthFormFooter
-          question="Already have an account?"
-          linkText="Login"
-          linkHref="/auth/login"
-          className="mt-4"
-        />
-
+        <AuthFormFooter question={t("auth.alreadyHaveAccount")} linkText={t("auth.login")} linkHref="/auth/login" className="mt-4" />
         <div className="pt-8 pb-4">
-          <p className="text-center text-textGray text-xs px-4 leading-relaxed opacity-80">
-            {tr("By creating an account you accept our Terms & Privacy Policy.")}
-          </p>
+          <p className="text-center text-textGray text-xs px-4 leading-relaxed opacity-80">{t("auth.termsNotice")}</p>
         </div>
       </form>
     </AuthPageLayout>

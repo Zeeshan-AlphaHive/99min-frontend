@@ -52,7 +52,16 @@
     "sending": "Sending...",
     "backToLogin": "Back to",
     "failedToSend": "Failed to send code",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "checkEmail": "Check your email",
+"verificationSent": "We sent a verification code to",
+"enterVerificationCode": "Enter the verification code",
+"didntReceive": "Didn't receive the code?",
+"resendIn": "Resend in",
+"verifyCode": "Verify Code",
+"verifying": "Verifying...",
+"accountNotFound": "No account found with this email. Please sign up.",
+"invalidCredentials": "Incorrect password. Please try again."
   },
   "settings": {
     "title": "Settings",
@@ -74,7 +83,10 @@
   },
   "notifications": {
     "title": "Notifications",
-    "subtitle": "Stay up to date"
+    "subtitle": "Stay up to date",
+    "refresh": "Refresh",
+"empty": "No notifications yet",
+"emptyDesc": "You're all caught up! Check back later."
   },
   "messages": {
     "title": "Messages",
@@ -86,7 +98,8 @@
     "online": "Online",
     "offline": "Offline",
     "sending": "Sending...",
-    "noMessagesYet": "No messages yet. Say hello!"
+    "noMessagesYet": "No messages yet. Say hello!",
+    "noConversations": "No conversations yet"
   },
   "profile": {
     "fullName": "Full Name",
@@ -96,7 +109,13 @@
     "save": "Save Changes",
     "saved": "Profile saved!",
     "title": "Profile",
-    "editPhoto": "Edit Photo"
+    "editPhoto": "Edit Photo",
+    "fullNamePlaceholder": "Enter your full name",
+"usernamePlaceholder": "Enter your username",
+"bioPlaceholder": "Tell us about yourself...",
+"phonePlaceholder": "Enter your phone number",
+"dob": "Date of Birth",
+"saveChanges": "Save Changes"
   },
   "payment": {
     "title": "Payment Methods",
@@ -128,7 +147,16 @@
     "faq6Q": "What payment methods are accepted?",
     "faq6A": "We accept all major credit and debit cards via Stripe.",
     "faq7Q": "How do I cancel my subscription?",
-    "faq7A": "Go to Settings > Subscriptions and click Manage Billing to cancel anytime."
+    "faq7A": "Go to Settings > Subscriptions and click Manage Billing to cancel anytime.",
+    "faq8Q": "Is my personal information safe?",
+"faq8A": "Yes, we take privacy seriously. Your data is encrypted and never shared with third parties without your consent.",
+"contactTitle": "Contact Support",
+"liveChat": "Live Chat",
+"liveChatDesc": "Chat with our support team in real time.",
+"emailSupport": "Email Support",
+"emailSupportDesc": "Send us an email and we'll get back to you within 24 hours.",
+"liveChatComingSoon": "Coming Soon",
+"liveChatComingSoonDesc": "Live chat support is currently unavailable. Please use email support."
   },
   "subscriptions": {
     "choosePlanHeader": "Subscriptions",
@@ -241,7 +269,8 @@
     "loadMore": "Load more",
     "category": "Category",
     "taskNotFound": "Task not found",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "loadingTasks": "Loading tasks..."
   },
   "common": {
     "cancel": "Cancel",
@@ -258,6 +287,7 @@
     "optional": "Optional",
     "search": "Search",
     "minutes": "minutes",
-    "hours": "hours"
+    "hours": "hours",
+    "selectLanguage": "Select Language"
   }
 }
