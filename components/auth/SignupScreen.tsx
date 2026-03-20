@@ -7,33 +7,73 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { Button, Input } from "@/components/ui";
 import { AuthPageLayout, AuthHeader, AuthFormFooter } from "./shared";
+import { Toast } from "@/components/ui/Toast";
 import OtpModal from "@/components/auth/OtpModal";
 import { authApi } from "@/utils/api/auth.api";
 import { signupSchema, SignupFormData } from "@/validators/auth-schema";
+
+interface ToastState {
+  message: string;
+  type: "error" | "success" | "warning";
+}
 
 const SignupScreen: React.FC = () => {
   const router = useRouter();
   const t = useTranslations();
   const [step, setStep] = useState<"form" | "otp">("form");
   const [email, setEmailState] = useState("");
-  const [apiError, setApiError] = useState("");
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   const { register, handleSubmit, formState: { errors, isSubmitting, isValid } } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema), mode: "onChange",
   });
 
-  const onSubmit = async (data: SignupFormData) => {
-    setApiError("");
-    try {
-      await authApi.signup({ name: data.name.trim(), email: data.email, password: data.password });
-      setEmailState(data.email); setStep("otp");
-    } catch (err: unknown) { setApiError(err instanceof Error ? err.message : t("auth.signupFailed")); }
+  const showToast = (message: string, type: ToastState["type"] = "error") => {
+    setToast(null);
+    setTimeout(() => setToast({ message, type }), 10);
   };
 
-  if (step === "otp") return <OtpModal email={email} onBack={() => setStep("form")} onVerify={() => router.push("/auth/login")} purpose="signup" />;
+  const onSubmit = async (data: SignupFormData) => {
+    try {
+      await authApi.signup({ name: data.name.trim(), email: data.email, password: data.password });
+      setEmailState(data.email);
+      setStep("otp");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+
+      if (message.includes("already exists") || message.includes("already registered")) {
+        showToast("An account with this email already exists. Please log in.", "warning");
+      } else if (message.includes("valid email") || message.includes("invalid email")) {
+        showToast("Please enter a valid email address.", "error");
+      } else if (message.includes("6 characters") || message.includes("too short")) {
+        showToast("Password must be at least 6 characters.", "error");
+      } else if (message.includes("required") || message.includes("All fields")) {
+        showToast("Please fill in all required fields.", "error");
+      } else {
+        showToast(message || t("auth.signupFailed"), "error");
+      }
+    }
+  };
+
+  if (step === "otp") return (
+    <OtpModal
+      email={email}
+      onBack={() => setStep("form")}
+      onVerify={() => router.push("/auth/login")}
+      purpose="signup"
+    />
+  );
 
   return (
     <AuthPageLayout backButtonHref="/" contentMaxWidth="sm">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={5000}
+          onClose={() => setToast(null)}
+        />
+      )}
       <AuthHeader title={t("auth.createAccount")} subtitle={t("auth.joinSubtitle")} ticketSize="sm" titleSize="2xl" className="mb-6" />
       <form className="w-full space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <div>
@@ -52,14 +92,15 @@ const SignupScreen: React.FC = () => {
           <Input type="password" id="confirm-password" label={t("auth.confirmPassword")} placeholder={t("auth.confirmPasswordPlaceholder")} showPasswordToggle {...register("confirmPassword")} />
           {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
         </div>
-        {apiError && <p className="text-red-500 text-sm text-center">{apiError}</p>}
         <div className="pt-4">
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={!isValid || isSubmitting}>
             {isSubmitting ? t("auth.creatingAccount") : t("auth.createAccount")}
           </Button>
         </div>
         <AuthFormFooter question={t("auth.alreadyHaveAccount")} linkText={t("auth.login")} linkHref="/auth/login" className="mt-4" />
-        <div className="pt-8 pb-4"><p className="text-center text-textGray text-xs px-4 leading-relaxed opacity-80">{t("auth.termsNotice")}</p></div>
+        <div className="pt-8 pb-4">
+          <p className="text-center text-textGray text-xs px-4 leading-relaxed opacity-80">{t("auth.termsNotice")}</p>
+        </div>
       </form>
     </AuthPageLayout>
   );

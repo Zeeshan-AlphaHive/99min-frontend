@@ -1,24 +1,18 @@
-/**
- * useAuthFetch.ts
- *
- * Shared utility for hooks that need to fetch data after auth is ready.
- * Waits for a valid access token (running silent refresh if needed) before
- * executing the fetch, preventing the race condition where in-memory
- * accessToken is null on first page load.
- */
 import { useCallback } from "react";
 import { getAccessToken, silentRefresh } from "@/utils/api/client";
 
-/**
- * Returns an `authFetch` wrapper you call instead of your service function directly.
- * It ensures a valid token exists before the request fires.
- *
- * Usage:
- *   const { authFetch } = useAuthFetch();
- *   const data = await authFetch(() => getProfile());
- */
+const PUBLIC_PATHS = ["/login", "/auth/signup", "/auth/forgot-password", "/auth/verify-otp"];
+
 export function useAuthFetch() {
   const authFetch = useCallback(async <T>(fn: () => Promise<T>): Promise<T> => {
+    // Don't attempt refresh on public pages
+    if (typeof window !== "undefined") {
+      const isPublicPath = PUBLIC_PATHS.some((p) =>
+        window.location.pathname.startsWith(p)
+      );
+      if (isPublicPath) return fn();
+    }
+
     if (!getAccessToken()) {
       const refreshed = await silentRefresh();
       if (!refreshed) {

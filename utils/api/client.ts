@@ -2,7 +2,8 @@
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-// In-memory token store — call setAccessToken() after login/refresh
+const PUBLIC_PATHS = ["/auth/login", "/auth/signup", "/auth/forgot-password", "/auth/verify-otp"];
+
 let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
@@ -14,9 +15,15 @@ export function getAccessToken(): string | null {
 }
 
 // ── Silent refresh ────────────────────────────────────────────────────────────
-let refreshPromise: Promise<void> | null = null; // prevent parallel refresh calls
+let refreshPromise: Promise<void> | null = null;
 
 export async function silentRefresh(): Promise<boolean> {
+  // Don't attempt refresh on public/auth pages — no valid cookie expected
+  if (typeof window !== "undefined") {
+    const isPublicPath = PUBLIC_PATHS.some((p) => window.location.pathname.startsWith(p));
+    if (isPublicPath) return false;
+  }
+
   if (refreshPromise) {
     await refreshPromise;
     return accessToken !== null;
@@ -26,7 +33,7 @@ export async function silentRefresh(): Promise<boolean> {
     try {
       const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
         method: "POST",
-        credentials: "include", // sends the httpOnly refreshToken cookie
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -35,7 +42,7 @@ export async function silentRefresh(): Promise<boolean> {
       }
 
       const data = await res.json();
-      accessToken = data.data.accessToken; // ✅ your backend returns { data: { accessToken } }
+      accessToken = data.data.accessToken;
     } catch {
       accessToken = null;
     } finally {
@@ -64,24 +71,31 @@ export async function request<T>(
     headers: makeHeaders(),
   });
 
-  // Auto-retry once after silent refresh on 401
-  if (res.status === 401) {
+if (res.status === 401) {
+  // Don't try to refresh on auth endpoints — just let the error bubble
+  const isAuthEndpoint = endpoint.includes("/api/auth/");
+  
+  if (!isAuthEndpoint) {
     const refreshed = await silentRefresh();
-
     if (!refreshed) {
-      // Refresh cookie also expired — send to login
-      window.location.href = "/login";
+      if (typeof window !== "undefined") {
+        const isPublicPath = PUBLIC_PATHS.some((p) =>
+          window.location.pathname.startsWith(p)
+        );
+        if (!isPublicPath) {
+          window.location.href = "/auth/login";
+        }
+      }
       throw new Error("Session expired. Please log in again.");
     }
 
-    // Retry original request with new token
     res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       credentials: "include",
       headers: makeHeaders(),
     });
   }
-
+}
   const data = await res.json();
 
   if (!res.ok) {
