@@ -49,6 +49,7 @@
     "resetPassword": "Reset Password",
     "resetPasswordDesc": "Enter your email and we'll send you a verification code to reset your password",
     "sendResetCode": "Send Reset Code",
+     "resendCode": "Resend Code",
     "sending": "Sending...",
     "backToLogin": "Back to",
     "failedToSend": "Failed to send code",
