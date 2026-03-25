@@ -10,6 +10,14 @@ import type { ApiTask } from "@/utils/api/tasks.api";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/contexts/i18n-context";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+function buildMediaUrl(path?: string): string {
+  if (!path) return "/placeholder.png";
+  if (path.startsWith("http")) return path;
+  return `${API_URL}/${path.replace(/^\//, "")}`;
+}
+
 function formatTimeLeft(expiresAt: string): string {
   const diff = new Date(expiresAt).getTime() - Date.now();
   if (diff <= 0) return "Expired";
@@ -72,7 +80,7 @@ export default function TaskDetailPage() {
 
   const mapped: TaskDetailsData & { posterUserId: string } = {
     _id: task._id,
-    image: task.media?.[0] ?? "",
+    image: buildMediaUrl(task.media?.[0]),
     title: task.title,
     description: task.description,
     price:
