@@ -32,9 +32,15 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(hrs / 24)} days ago`;
 }
 interface TaskWithOwner extends TaskDetailsData { createdBy: string; posterUserId: string; }
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+function buildMediaUrl(path?: string): string {
+  if (!path) return "/placeholder.png";
+  if (path.startsWith("http")) return path; // already absolute
+  return `${API_URL}/${path.replace(/^\//, "")}`; // prepend base URL
+}
 function mapApiTask(task: ApiTask): TaskWithOwner {
   return {
-    _id: task._id, image: task.media?.[0] ?? "", title: task.title, description: task.description,
+    _id: task._id, image: buildMediaUrl(task.media?.[0]), title: task.title, description: task.description,
     price: task.budget.min === task.budget.max ? `${task.budget.min}` : `${task.budget.min}-${task.budget.max}`,
     location: task.location.label, timeLeft: formatTimeLeft(task.expiresAt),
     interest: task.interestCount ?? 0, urgent: task.urgent, category: task.category,

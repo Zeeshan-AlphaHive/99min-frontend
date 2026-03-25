@@ -25,8 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NextIntlClientProvider>
           <QueryProvider>
             <AuthProvider>
-              <SilentRefreshInit />
+               <SilentRefreshInit> 
               {children}
+               </SilentRefreshInit>
             </AuthProvider>
           </QueryProvider>
         </NextIntlClientProvider>

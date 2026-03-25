@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Flag, Share2, MoreVertical, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Flag, Share2, MoreVertical, Pencil, Trash2, Loader2, Play } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import ReportAdModal from './ReportAdModal';
@@ -26,6 +26,10 @@ export interface TaskDetailsData {
 
 interface TaskDetailsProps { task: TaskDetailsData; onBack: () => void; isOwner?: boolean; onEdit?: () => void; onDelete?: () => void; }
 
+// ─── Detect if a URL points to a video file ──────────────────────────────────
+const isVideoUrl = (url: string): boolean =>
+  /\.(mp4|webm|ogg|mov|avi|mkv)(\?.*)?$/i.test(url);
+
 const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false, onEdit, onDelete }) => {
   const router = useRouter();
   const t = useTranslations();
@@ -37,6 +41,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false
   const [sendError, setSendError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false); };
@@ -46,8 +51,17 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false
 
   const { title, description, price, location, timeLeft, interest, urgent = false, category = 'General', postedTime = t("task.postedTime"), tags = [] } = task;
   const imageSrc = task.image && task.image.length > 0 ? task.image : dog.src;
+  const isVideo = isVideoUrl(imageSrc);
+
   const { mutateAsync: report } = useReportTask(task._id);
   const { mutate: recordShare } = useShareTask();
+
+  // Seek to 1s so the hero shows a real frame instead of black
+  const handleVideoMetadata = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.min(1, videoRef.current.duration / 2);
+    }
+  };
 
   const handleSendMessage = async () => {
     const trimmed = message.trim();
@@ -69,28 +83,65 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false
     <div className="min-h-screen bg-white">
       <TaskDetailsHeader onBack={onBack} onReport={!isOwner ? () => setIsReportModalOpen(true) : undefined} onShare={!isOwner ? () => setIsShareModalOpen(true) : undefined} />
       <div className="max-w-7xl mx-auto pb-24">
-        <div className="relative w-full h-96 mb-0">
-          <Image src={imageSrc} alt={title} fill className="object-cover rounded-b-4xl" />
+
+        {/* ─── Hero Media ───────────────────────────────────────────────── */}
+        <div className="relative w-full h-96 mb-0 bg-gray-100 rounded-b-4xl overflow-hidden">
+          {isVideo ? (
+            <>
+              <video
+                ref={videoRef}
+                src={imageSrc}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                controls
+                preload="metadata"
+                onLoadedMetadata={handleVideoMetadata}
+              />
+              {/* Video label badge */}
+              <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 pointer-events-none">
+                <Play className="w-3.5 h-3.5 text-white fill-white" />
+                <span className="text-white text-xs font-semibold">Video</span>
+              </div>
+            </>
+          ) : (
+            <Image src={imageSrc} alt={title} fill className="object-cover rounded-b-4xl" />
+          )}
+
+          {/* ─── Top-left: Share / Report ──────────────────────────────── */}
           <div className="absolute top-4 left-4 flex gap-2 z-10">
             {!isOwner && (
               <>
-                <button onClick={() => setIsShareModalOpen(true)} className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition" aria-label={t("task.shareAd")}><Share2 className="w-4 h-4 text-orange" /></button>
-                <button onClick={() => setIsReportModalOpen(true)} className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition" aria-label={t("task.reportAd")}><Flag className="w-4 h-4 text-orange" /></button>
+                <button onClick={() => setIsShareModalOpen(true)} className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition" aria-label={t("task.shareAd")}>
+                  <Share2 className="w-4 h-4 text-orange" />
+                </button>
+                <button onClick={() => setIsReportModalOpen(true)} className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition" aria-label={t("task.reportAd")}>
+                  <Flag className="w-4 h-4 text-orange" />
+                </button>
               </>
             )}
           </div>
+
+          {/* ─── Top-right: Owner menu ─────────────────────────────────── */}
           {isOwner && (
             <div ref={menuRef} className="absolute top-4 right-4 z-10">
-              <button onClick={() => setMenuOpen((p) => !p)} className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition"><MoreVertical className="w-4 h-4 text-gray-700" /></button>
+              <button onClick={() => setMenuOpen((p) => !p)} className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition">
+                <MoreVertical className="w-4 h-4 text-gray-700" />
+              </button>
               {menuOpen && (
                 <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-20">
-                  <button type="button" onClick={() => { setMenuOpen(false); onEdit?.(); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"><Pencil className="w-4 h-4 text-orange" />{t("task.editTask")}</button>
-                  <button type="button" onClick={() => { setMenuOpen(false); setIsDeleteModalOpen(true); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 transition"><Trash2 className="w-4 h-4" />{t("task.deleteTask")}</button>
+                  <button type="button" onClick={() => { setMenuOpen(false); onEdit?.(); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+                    <Pencil className="w-4 h-4 text-orange" />{t("task.editTask")}
+                  </button>
+                  <button type="button" onClick={() => { setMenuOpen(false); setIsDeleteModalOpen(true); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 transition">
+                    <Trash2 className="w-4 h-4" />{t("task.deleteTask")}
+                  </button>
                 </div>
               )}
             </div>
           )}
         </div>
+
         <TaskHeader title={title} price={price} urgent={urgent} postedTime={postedTime} timeLeft={timeLeft} />
         <div className="bg-white px-6 pb-6">
           <TaskDetailCards location={location} category={category} interest={interest} />

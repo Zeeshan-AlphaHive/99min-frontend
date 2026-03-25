@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { DollarSign, MapPin, Tag, CloudUpload, Check, Clock, X } from 'lucide-react';
+import { DollarSign, MapPin, Tag, CloudUpload, Check, Clock, X, Play } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import CategorySelector from './CategorySelector';
@@ -31,9 +31,7 @@ export interface FormData {
 
 interface CreateTaskFormProps {
   onSubmit?: (data: FormData, files: File[]) => Promise<void>;
-  /** Pass prefilled values when editing an existing task */
   initialData?: Partial<FormData>;
-  /** When true, shows "Update Ad" label instead of "Post Ad" */
   isEditMode?: boolean;
 }
 
@@ -47,6 +45,32 @@ const defaultFormData: FormData = {
   duration: '90_mins',
 };
 
+// ─── Generate a thumbnail from a video file ──────────────────────────────────
+const getVideoThumbnail = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.currentTime = 1;
+    video.muted = true;
+    video.playsInline = true;
+
+    video.onloadeddata = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      canvas.getContext('2d')?.drawImage(video, 0, 0);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg'));
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve('');
+    };
+  });
+};
+
 const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   onSubmit,
   initialData,
@@ -56,12 +80,14 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  // ─── File state ────────────────────────────────────────────────────────────
+  // ─── File state ──────────────────────────────────────────────────────────────
   const [files, setFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [videoThumbnails, setVideoThumbnails] = useState<Record<number, string>>({});
   const [fileType, setFileType] = useState<'image' | 'video' | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (!selectedFiles.length) return;
 
@@ -83,16 +109,42 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       return;
     }
 
+    const startIndex = files.length;
+    const newUrls = selectedFiles.map((f) => URL.createObjectURL(f));
+    setPreviewUrls((prev) => [...prev, ...newUrls]);
     setFiles((prev) => [...prev, ...selectedFiles]);
     setFileError(null);
+
+    // ✅ Generate thumbnails for video files
+    for (let i = 0; i < selectedFiles.length; i++) {
+      if (selectedFiles[i].type.startsWith('video')) {
+        const thumb = await getVideoThumbnail(selectedFiles[i]);
+        setVideoThumbnails((prev) => ({ ...prev, [startIndex + i]: thumb }));
+      }
+    }
   };
 
   const removeFile = (index: number) => {
+    URL.revokeObjectURL(previewUrls[index]);
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
     setFiles((prev) => prev.filter((_, i) => i !== index));
+
+    // ✅ Remap video thumbnail indices after removal
+    setVideoThumbnails((prev) => {
+      const updated: Record<number, string> = {};
+      Object.entries(prev).forEach(([key, val]) => {
+        const k = Number(key);
+        if (k < index) updated[k] = val;
+        else if (k > index) updated[k - 1] = val;
+        // k === index is dropped
+      });
+      return updated;
+    });
+
     if (files.length === 1) setFileType(null);
   };
 
-  // ─── Form state (merge defaults with any prefilled data) ───────────────────
+  // ─── Form state ───────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState<FormData>({
     ...defaultFormData,
     ...initialData,
@@ -102,20 +154,18 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ─── Dirty check: true when something has changed from initialData ─────────
+  // ─── Dirty check ──────────────────────────────────────────────────────────────
   const isDirty = useMemo(() => {
-    if (!isEditMode) return true; // always "dirty" in create mode
+    if (!isEditMode) return true;
 
     const base: FormData = { ...defaultFormData, ...initialData };
-
     const fieldsChanged = (Object.keys(base) as (keyof FormData)[]).some(
       (key) => formData[key] !== base[key]
     );
-
     return fieldsChanged || files.length > 0;
   }, [isEditMode, initialData, formData, files]);
 
-  // ─── Submit ────────────────────────────────────────────────────────────────
+  // ─── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -125,7 +175,6 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       return;
     }
 
-    // In edit mode, media upload is optional (existing media is kept server-side)
     if (!isEditMode && files.length === 0) {
       alert('Please upload at least one image or video.');
       return;
@@ -146,8 +195,11 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   };
 
   const resetForm = () => {
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setFormData(defaultFormData);
     setFiles([]);
+    setPreviewUrls([]);
+    setVideoThumbnails({});
     setFileType(null);
   };
 
@@ -266,29 +318,50 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
         {files.length > 0 && (
           <div className="flex flex-wrap mt-3 gap-3">
             {files.map((file, index) => {
-              const url = URL.createObjectURL(file);
+              const isVideo = file.type.startsWith('video');
+              // For images use the blob URL directly, for videos use generated thumbnail
+              const thumbnailSrc = isVideo
+                ? videoThumbnails[index]
+                : previewUrls[index];
+
               return (
                 <div
                   key={file.name + index}
-                  className="relative w-24 h-24 border rounded-lg overflow-hidden"
+                  className="relative w-24 h-24 border rounded-lg overflow-hidden bg-gray-100"
                 >
+                  {/* Remove button */}
                   <button
                     type="button"
                     className="absolute top-1 right-1 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-gray-300 z-10"
-                    onClick={() => { removeFile(index); URL.revokeObjectURL(url); }}
+                    onClick={() => removeFile(index)}
                   >
                     <X className="w-3 h-3" />
                   </button>
 
-                  {file.type.startsWith('image') ? (
-                    <Image src={url} alt={file.name} fill className="object-cover" />
+                  {thumbnailSrc ? (
+                    <>
+                      {/* ✅ Both image and video thumbnail use Next.js Image */}
+                      <Image
+                        src={thumbnailSrc}
+                        alt={file.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                      {/* ✅ Play icon overlay for videos */}
+                      {isVideo && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <Play className="w-6 h-6 text-white fill-white" />
+                        </div>
+                      )}
+                    </>
                   ) : (
-                    <video
-                      src={url}
-                      className="w-full h-full object-cover"
-                      controls={false}
-                      preload="metadata"
-                    />
+                    // Fallback while video thumbnail is generating
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-xs text-gray-400">
+                        {isVideo ? 'Loading...' : 'Error'}
+                      </span>
+                    </div>
                   )}
                 </div>
               );
