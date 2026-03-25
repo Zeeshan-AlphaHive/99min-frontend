@@ -5,28 +5,30 @@ const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true, // ✅ Skip Next.js image optimizer entirely — load images directly from source
     remotePatterns: [
-      // Local development
       {
         protocol: "http" as const,
         hostname: "localhost",
         port: "5000",
         pathname: "/uploads/**",
       },
-      // Production API
       {
         protocol: "https" as const,
         hostname: "api.99min.com",
         pathname: "/uploads/**",
       },
-      // Render deployed backend
       {
         protocol: "https" as const,
         hostname: "nine9-min-backend.onrender.com",
         pathname: "/uploads/**",
       },
+      // Catch-all for any other backend domains
+      {
+        protocol: "https" as const,
+        hostname: "**.onrender.com",
+      },
     ],
-    unoptimized: process.env.NODE_ENV === "development",
   },
 };
 
