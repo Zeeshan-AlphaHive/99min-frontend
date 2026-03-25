@@ -87,7 +87,8 @@
     "subtitle": "Stay up to date",
     "refresh": "Refresh",
 "empty": "No notifications yet",
-"emptyDesc": "You're all caught up! Check back later."
+"emptyDesc": "You're all caught up! Check back later.",
+  "markAllRead": "Mark all as read"
   },
   "messages": {
     "title": "Messages",
@@ -100,7 +101,13 @@
     "offline": "Offline",
     "sending": "Sending...",
     "noMessagesYet": "No messages yet. Say hello!",
-    "noConversations": "No conversations yet"
+    "noConversations": "No conversations yet",
+     "enterHint": "Press Enter to send",
+    "muteNotifications": "Mute Notifications",
+    "viewAdDetails": "View Ad Details",
+    "reportUser": "Report User",
+    "blockUser": "Block User",
+    "deleteChat": "Delete Chat"
   },
   "profile": {
     "fullName": "Full Name",
@@ -271,7 +278,17 @@
     "category": "Category",
     "taskNotFound": "Task not found",
     "goBack": "Go back",
-    "loadingTasks": "Loading tasks..."
+    "loadingTasks": "Loading tasks...",
+    "interest": "interest",
+    "editTask": "Edit Task",
+    "deleteTask": "Delete Task",
+  "shareAd": "Share Ad",
+    "reportAd": "Report Ad",
+    "sendMessage": "Send Message",
+    "messagePlaceholder": "Type your message here...",
+    "send": "Send",
+    "openingChat": "Opening chat...",
+    "sending": "Sending..."
   },
   "common": {
     "cancel": "Cancel",
