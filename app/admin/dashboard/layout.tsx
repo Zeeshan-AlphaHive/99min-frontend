@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import AdminSidebar from '../../components/admin/dashboard/AdminSidebar';
-import AdminTopNav from '../../components/admin/dashboard/AdminTopNav';
+import AdminSidebar from '../../../components/admin/dashboard/AdminSidebar';
+import AdminTopNav from '../../../components/admin/dashboard/AdminTopNav';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
