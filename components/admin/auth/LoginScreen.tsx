@@ -36,8 +36,8 @@ const LoginScreen: React.FC = () => {
   return (
     <AuthLayout bgImage="/assets/images/login.png" bgAlt="Login background">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
           Log in
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed">
@@ -47,7 +47,6 @@ const LoginScreen: React.FC = () => {
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full">
-        {/* Email */}
         <AuthInput
           label="Email"
           type="email"
@@ -56,7 +55,6 @@ const LoginScreen: React.FC = () => {
           {...register("email")}
         />
 
-        {/* Password */}
         <AuthInput
           label="Password"
           type="password"
@@ -66,7 +64,7 @@ const LoginScreen: React.FC = () => {
         />
 
         {/* Remember me + Forgot password */}
-        <div className="flex items-center justify-between mb-6 mt-1">
+        <div className="flex items-center justify-between mb-6 mt-1 gap-2 flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -78,33 +76,21 @@ const LoginScreen: React.FC = () => {
           </label>
 
           <Link
-            href="/auth/forgot-password"
+            href="/admin/auth/forgot-password"
             className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"
           >
             Forgot password
           </Link>
         </div>
 
-        {/* Submit */}
         <PrimaryButton
           type="submit"
           loading={isSubmitting}
           disabled={!isValid || isSubmitting}
         >
-          {isSubmitting ? "Signing in..." : "Log in"}
+          {isSubmitting ? "Logging in..." : "Log in"}
         </PrimaryButton>
       </form>
-
-      {/* Footer */}
-      <p className="mt-6 text-center text-sm text-gray-500">
-        Don&apos;t have an account?{" "}
-        <Link
-          href="/auth/signup"
-          className="font-semibold text-orange-500 hover:text-orange-600 transition-colors"
-        >
-          Sign up
-        </Link>
-      </p>
     </AuthLayout>
   );
 };

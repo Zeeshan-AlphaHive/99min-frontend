@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Trash2, TrendingUp, UserPlus, Zap } from 'lucide-react';
+import { ChartArea, Trash2, TrendingUp, UserPlus, Zap } from 'lucide-react';
 
 type InvoiceItem = {
   name: string;
@@ -19,8 +19,8 @@ export default function EcosystemPulsePendingInvoices() {
     {
       name: 'Dave Mills',
       action: 'reported platform issue',
-      icon: <Activity className="w-5 h-5" />,
-      iconContainerClassName: 'border border-gray-200 bg-lightGrey text-textGray',
+      icon: <ChartArea className="w-5 h-5" />,
+      iconContainerClassName: 'border border-gray-200 bg-blue-100 text-blue-500',
     },
     {
       name: 'Anna White',

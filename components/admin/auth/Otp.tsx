@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/admin/auth/AuthLayout";
 import { OtpInput, Countdown, PrimaryButton } from "@/components/admin/auth/AuthComponents";
 
-
-
 interface OtpScreenProps {
   email?: string;
   redirectTo?: string;
@@ -50,8 +48,8 @@ const OtpScreen: React.FC<OtpScreenProps> = ({
 
   return (
     <AuthLayout bgImage="/assets/images/otp.png" bgAlt="OTP verification background">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
           OTP Verification
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed">
@@ -59,7 +57,7 @@ const OtpScreen: React.FC<OtpScreenProps> = ({
         </p>
       </div>
 
-      <div className="mt-6 mb-2">
+      <div className="mt-4 sm:mt-6 mb-2">
         <OtpInput value={otp} onChange={setOtp} />
       </div>
 

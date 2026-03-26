@@ -58,7 +58,7 @@ const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ compact = false }) 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { locale, setLocale, tr, languageLabel } = useI18n();
 
-  const selectedCode = LANGUAGE_CODES.includes(locale) ? locale : "en";
+const selectedCode = LANGUAGE_CODES.includes(locale) ? locale : "de";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

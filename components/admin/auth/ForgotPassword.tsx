@@ -8,7 +8,6 @@ import { z } from "zod";
 import { AuthLayout } from "@/components/admin/auth/AuthLayout";
 import { AuthInput, PrimaryButton, OutlineButton } from "@/components/admin/auth/AuthComponents";
 
-
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
 });
@@ -33,18 +32,18 @@ const ForgotPasswordScreen: React.FC = () => {
 
   return (
     <AuthLayout bgImage="/assets/images/forgot.png" bgAlt="Forgot password background">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
           Forgot Password
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed">
           Enter your email and we will send you a verification code to get back
-          into your account
+          into your account.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <AuthInput
             label="Email"
             type="email"
