@@ -162,7 +162,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const tr = useCallback(
     (text: string) => {
       if (!text) return text;
-  if (locale === "de") return text;
+      // `tr` translates arbitrary UI text from English -> active locale.
+      // If we're already in English, return as-is.
+      if (locale === "en") return text;
 
       const cached = textTranslations[text];
       if (cached) return cached;
