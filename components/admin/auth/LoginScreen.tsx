@@ -9,14 +9,12 @@ import { z } from "zod";
 import { AuthLayout } from "@/components/admin/auth/AuthLayout";
 import { AuthInput, PrimaryButton } from "@/components/admin/auth/AuthComponents";
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
 });
 type FormData = z.infer<typeof schema>;
 
-// ─── Component ────────────────────────────────────────────────────────────────
 const LoginScreen: React.FC = () => {
   const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
@@ -31,16 +29,15 @@ const LoginScreen: React.FC = () => {
   });
 
   const onSubmit = async (data: FormData) => {
-    // Replace with real auth logic
     console.log("Login:", data, "Remember:", rememberMe);
     router.push("/dashboard");
   };
 
   return (
-    <AuthLayout bgImage="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80">
+    <AuthLayout bgImage="/assets/images/login.png" bgAlt="Login background">
       {/* Header */}
-      <div className="mb-7">
-        <h1 className="text-[28px] font-bold text-gray-900 tracking-tight mb-2">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
           Log in
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed">
@@ -49,7 +46,8 @@ const LoginScreen: React.FC = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full">
+        {/* Email */}
         <AuthInput
           label="Email"
           type="email"
@@ -58,6 +56,7 @@ const LoginScreen: React.FC = () => {
           {...register("email")}
         />
 
+        {/* Password */}
         <AuthInput
           label="Password"
           type="password"
@@ -66,8 +65,8 @@ const LoginScreen: React.FC = () => {
           {...register("password")}
         />
 
-        {/* Remember + Forgot */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Remember me + Forgot password */}
+        <div className="flex items-center justify-between mb-6 mt-1">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -86,12 +85,13 @@ const LoginScreen: React.FC = () => {
           </Link>
         </div>
 
+        {/* Submit */}
         <PrimaryButton
           type="submit"
           loading={isSubmitting}
           disabled={!isValid || isSubmitting}
         >
-          Sign in
+          {isSubmitting ? "Signing in..." : "Log in"}
         </PrimaryButton>
       </form>
 

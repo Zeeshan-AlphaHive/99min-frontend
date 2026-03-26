@@ -3,19 +3,13 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/admin/auth/AuthLayout";
+import { OtpInput, Countdown, PrimaryButton } from "@/components/admin/auth/AuthComponents";
 
-import {
-  OtpInput,
-  Countdown,
-  PrimaryButton,
-} from "@/components/admin/auth/AuthComponents";
+
 
 interface OtpScreenProps {
-  /** The email OTP was sent to — pass via query param or context in real app */
   email?: string;
-  /** Where to navigate after successful verification */
   redirectTo?: string;
-  /** Purpose changes behaviour: "signup" stays on verify | "forgot-password" goes to reset */
   purpose?: "signup" | "forgot-password";
 }
 
@@ -28,7 +22,7 @@ const OtpScreen: React.FC<OtpScreenProps> = ({
   const [otp, setOtp] = useState<string[]>(Array(4).fill(""));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [resendKey, setResendKey] = useState(0); // remounts Countdown to reset timer
+  const [resendKey, setResendKey] = useState(0);
 
   const isComplete = otp.every((d) => d !== "");
 
@@ -38,15 +32,10 @@ const OtpScreen: React.FC<OtpScreenProps> = ({
     setError("");
     try {
       const code = otp.join("");
-      // Replace with real API verification
       console.log("Verify OTP:", code, "purpose:", purpose);
-      const dest =
-        redirectTo ??
-        (purpose === "forgot-password"
-          ? "/auth/new-password"
-          : "/dashboard");
+      const dest = redirectTo ?? (purpose === "forgot-password" ? "/auth/new-password" : "/dashboard");
       router.push(dest);
-    } catch (err) {
+    } catch {
       setError("Invalid code. Please try again.");
     } finally {
       setLoading(false);
@@ -56,15 +45,13 @@ const OtpScreen: React.FC<OtpScreenProps> = ({
   const handleResend = () => {
     setOtp(Array(4).fill(""));
     setResendKey((k) => k + 1);
-    // Replace with real resend API call
     console.log("Resend OTP to:", email);
   };
 
   return (
-    <AuthLayout bgImage="https://images.unsplash.com/photo-1567016432779-094069958ea5?w=900&q=80">
-      {/* Header */}
-      <div className="mb-7">
-        <h1 className="text-[28px] font-bold text-gray-900 tracking-tight mb-2">
+    <AuthLayout bgImage="/assets/images/otp.png" bgAlt="OTP verification background">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
           OTP Verification
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed">
@@ -72,20 +59,16 @@ const OtpScreen: React.FC<OtpScreenProps> = ({
         </p>
       </div>
 
-      {/* OTP boxes */}
-      <div className="mt-8 mb-1">
+      <div className="mt-6 mb-2">
         <OtpInput value={otp} onChange={setOtp} />
       </div>
 
-      {/* Error */}
       {error && (
-        <p className="text-center text-xs text-red-500 mt-2 mb-2">{error}</p>
+        <p className="text-center text-xs text-red-500 mt-2">{error}</p>
       )}
 
-      {/* Countdown */}
-      <Countdown key={resendKey} seconds={60} onExpire={() => {}} />
+      <Countdown key={resendKey} seconds={60} />
 
-      {/* Resend link */}
       <p className="text-center text-sm text-gray-400 mb-6">
         Didn&apos;t receive the code?{" "}
         <button

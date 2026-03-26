@@ -5,11 +5,11 @@ import Link from "next/link";
 import { AuthLayout } from "@/components/admin/auth/AuthLayout";
 import { PrimaryButton } from "@/components/admin/auth/AuthComponents";
 
+
 const PasswordUpdatedScreen: React.FC = () => {
   return (
-    <AuthLayout bgImage="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=900&q=80">
+    <AuthLayout bgImage="/assets/images/updated.png" bgAlt="Password updated background">
       <div className="flex flex-col items-center text-center">
-        {/* Success icon */}
         <div className="w-20 h-20 rounded-full bg-orange-50 border-2 border-orange-200 flex items-center justify-center mb-6">
           <svg
             width="36"
@@ -25,7 +25,7 @@ const PasswordUpdatedScreen: React.FC = () => {
           </svg>
         </div>
 
-        <h1 className="text-[28px] font-bold text-gray-900 tracking-tight mb-3">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-3">
           Password Updated!
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed mb-8 max-w-xs">
