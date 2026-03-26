@@ -10,7 +10,7 @@ type AdminTopNavProps = {
 export default function AdminTopNav({
   userName = 'Jerremy Hage',
   roleLabel = 'Super Admin',
-  avatarSrc = '/api/placeholder/40/40',
+  avatarSrc = '/assets/images/user.png',
 }: AdminTopNavProps) {
   return (
     <header className="h-[72px] border-b border-gray-200 bg-white flex items-center justify-between px-8">

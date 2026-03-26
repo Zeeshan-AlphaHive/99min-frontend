@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpFromDot} from 'lucide-react';
 
 type EcosystemPulseStatCardProps = {
   title: string;
@@ -32,7 +32,7 @@ export default function EcosystemPulseStatCard({
 
       <div className="flex items-center text-sm">
         <span className="text-green-500 font-medium flex items-center">
-          <ArrowUpRight className="w-4 h-4 mr-1" /> {changePercent}
+          <ArrowUpFromDot className="w-4 h-4 mr-1" /> {changePercent}
         </span>
         <span className="text-textGray ml-1">{changeLabel}</span>
       </div>

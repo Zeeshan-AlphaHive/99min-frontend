@@ -41,7 +41,7 @@ function safeDisplayNames(locale: string): Intl.DisplayNames {
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState("en");
+  const [locale, setLocaleState] = useState("de");
   const localeRef = useRef(locale);
   useEffect(() => {
     localeRef.current = locale;
@@ -162,6 +162,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const tr = useCallback(
     (text: string) => {
       if (!text) return text;
+      // `tr` translates arbitrary UI text from English -> active locale.
+      // If we're already in English, return as-is.
       if (locale === "en") return text;
 
       const cached = textTranslations[text];

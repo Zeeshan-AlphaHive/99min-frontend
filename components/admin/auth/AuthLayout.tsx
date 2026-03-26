@@ -15,9 +15,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   bgAlt = "",
 }) => {
   return (
-    <div className="flex min-h-screen w-full">
-      {/* ── Left Panel — exactly 50% ── */}
-      <div className="relative w-1/2 min-h-screen overflow-hidden">
+    <div className="flex min-h-screen w-full flex-col lg:flex-row">
+      {/* ── Left Panel — hidden on mobile, 50% on lg+ ── */}
+      <div className="relative hidden lg:block lg:w-1/2 min-h-screen overflow-hidden">
         <Image
           src={bgImage}
           alt={bgAlt}
@@ -39,8 +39,8 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-transparent to-black/20" />
       </div>
 
-      {/* ── Right Panel — exactly 50% ── */}
-      <div className="w-1/2 min-h-screen flex items-center justify-center bg-white px-8 py-12 lg:px-16">
+      {/* ── Right Panel — full width on mobile, 50% on lg+ ── */}
+      <div className="flex flex-1 lg:w-1/2 min-h-screen items-center justify-center bg-white px-6 py-10 sm:px-10 lg:px-16">
         <div className="w-full max-w-[400px] animate-fadeSlide">
           {children}
         </div>

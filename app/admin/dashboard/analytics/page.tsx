@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
           title="Total Users"
           value="14,285"
           icon={<Users className="w-5 h-5" />}
-          iconContainerClassName="bg-iconBg text-orange"
+          iconContainerClassName="bg-lightRed text-red"
           changePercent="25%"
           changeLabel="this month"
         />
@@ -49,23 +49,23 @@ export default function AnalyticsPage() {
           changeLabel="this month"
         />
 
-        <EcosystemPulseStatCard
-          title="Active Assets"
-          value="1,204"
-          icon={<Briefcase className="w-5 h-5" />}
-          iconContainerClassName="bg-lightGrey text-textBlack"
-          changePercent="5%"
-          changeLabel="ongoing now"
-        />
+       <EcosystemPulseStatCard
+  title="Active Assets"
+  value="1,204"
+  icon={<Briefcase className="w-5 h-5" />}
+  iconContainerClassName="bg-orange-100 text-orange-500"
+  changePercent="5%"
+  changeLabel="ongoing now"
+/>
 
-        <EcosystemPulseStatCard
-          title="Current Load"
-          value="94.2%"
-          icon={<RefreshCw className="w-5 h-5" />}
-          iconContainerClassName="bg-lightGrey text-textBlack"
-          changePercent="1.5%"
-          changeLabel="ongoing now"
-        />
+<EcosystemPulseStatCard
+  title="Current Load"
+  value="94.2%"
+  icon={<RefreshCw className="w-5 h-5" />}
+  iconContainerClassName="bg-purple-100 text-purple-500"
+  changePercent="1.5%"
+  changeLabel="ongoing now"
+/>
       </div>
 
       {/* Main content */}

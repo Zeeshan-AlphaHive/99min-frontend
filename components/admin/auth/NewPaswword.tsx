@@ -2,12 +2,11 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AuthLayout } from "@/components/admin/auth/AuthLayout";
 import { AuthInput, PrimaryButton } from "@/components/admin/auth/AuthComponents";
-
 
 const schema = z
   .object({
@@ -21,20 +20,25 @@ const schema = z
 
 type FormData = z.infer<typeof schema>;
 
+const strengthLabels = ["", "Weak", "Fair", "Good", "Strong"] as const;
+const strengthBarColors = ["", "bg-red-400", "bg-yellow-400", "bg-blue-400", "bg-green-500"] as const;
+const strengthTextColors = ["", "text-red-500", "text-yellow-500", "text-blue-500", "text-green-500"] as const;
+
 const NewPasswordScreen: React.FC = () => {
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
+    defaultValues: { newPassword: "", confirmPassword: "" },
   });
 
-  const newPassword = watch("newPassword") ?? "";
+  const newPassword = useWatch({ control, name: "newPassword" }) ?? "";
 
   const strength = [
     newPassword.length >= 8,
@@ -43,10 +47,6 @@ const NewPasswordScreen: React.FC = () => {
     /[^A-Za-z0-9]/.test(newPassword),
   ].filter(Boolean).length;
 
-  const strengthLabels = ["", "Weak", "Fair", "Good", "Strong"];
-  const strengthBarColors = ["", "bg-red-400", "bg-yellow-400", "bg-blue-400", "bg-green-500"];
-  const strengthTextColors = ["", "text-red-500", "text-yellow-500", "text-blue-500", "text-green-500"];
-
   const onSubmit = async (data: FormData) => {
     console.log("Set new password:", data.newPassword);
     router.push("/auth/password-updated");
@@ -54,8 +54,8 @@ const NewPasswordScreen: React.FC = () => {
 
   return (
     <AuthLayout bgImage="/assets/images/new.png" bgAlt="Create new password background">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
           Create New Password
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed">
@@ -98,7 +98,7 @@ const NewPasswordScreen: React.FC = () => {
         )}
 
         <AuthInput
-          label="Confirm New Passwords"
+          label="Confirm New Password"
           type="password"
           placeholder="Confirm new password"
           error={errors.confirmPassword?.message}
