@@ -1,5 +1,6 @@
 import React from 'react';
 import { BackButton } from "@/components/ui";
+import LanguageDropdown from '@/components/dashboard/LanguageDropdown';
 
 interface AuthPageLayoutProps {
   children: React.ReactNode;
@@ -36,6 +37,11 @@ const AuthPageLayout: React.FC<AuthPageLayoutProps> = ({
           )}
         </div>
       )}
+
+    {/* Language Dropdown - Top Right */}
+    <div className="absolute top-6 right-6 z-50">
+      <LanguageDropdown />
+    </div>
 
       {/* Main Content */}
       <div className={`grow flex flex-col items-center w-full ${maxWidthClasses[contentMaxWidth]} mx-auto ${contentClassName}`}>

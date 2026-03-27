@@ -4,11 +4,18 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import { TicketIcon } from "./shared";
 import { useI18n } from "@/contexts/i18n-context";
+import LanguageDropdown from "@/components/dashboard/LanguageDropdown";
 
 const AuthScreen: React.FC = () => {
   const { tr } = useI18n();
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+    <div className="relative min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      
+      {/* Language Dropdown - Top Right */}
+      <div className="absolute top-6 right-6 z-50">
+        <LanguageDropdown />
+      </div>
+
       <div className="w-full max-w-sm flex flex-col items-center">
         
         {/* Top Section: Ticket Graphic */}

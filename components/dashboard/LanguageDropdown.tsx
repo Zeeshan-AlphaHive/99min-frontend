@@ -7,7 +7,6 @@ import { useI18n } from "@/contexts/i18n-context";
 /** BCP 47 codes, same order as the original language list. */
 const LANGUAGE_CODES: readonly string[] = [
   "sq",
-  "ast",
   "be",
   "bs",
   "bg",
