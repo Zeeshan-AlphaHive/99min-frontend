@@ -7,9 +7,9 @@ import {
   RefreshCw,
   Users,
 } from 'lucide-react';
-import EcosystemPulseStatCard from '@/components/admin/dashboard/analytics/EcosystemPulseStatCard';
-import EcosystemPulseTrendsGraph from '@/components/admin/dashboard/analytics/EcosystemPulseTrendsGraph';
-import EcosystemPulsePendingInvoices from '@/components/admin/dashboard/analytics/EcosystemPulsePendingInvoices';
+import EcosystemPulseStatCard from '@/components/admin/dashboard/DashboardAnalytics/StatCard';
+import EcosystemPulseTrendsGraph from '@/components/admin/dashboard/DashboardAnalytics/TrendsGraph';
+import EcosystemPulsePendingInvoices from '@/components/admin/dashboard/DashboardAnalytics/PendingInvoices';
 
 const chartData = [
   { month: 'Jan', current: 40000, previous: 15000 },

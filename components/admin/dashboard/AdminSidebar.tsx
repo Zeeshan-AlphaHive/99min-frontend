@@ -1,12 +1,17 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import {
-  BarChart2,
-  ChevronDown,
-  ClipboardCheck,
+  ShieldAlert,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+ Users,
   CreditCard,
-  HelpCircle,
   Home,
-  MapPin,
+ CalendarCheck,
   Settings,
 } from 'lucide-react';
 
@@ -14,84 +19,131 @@ type NavItem = {
   label: string;
   href: string;
   icon: ReactNode;
-  active?: boolean;
 };
 
+const navItems: NavItem[] = [
+  { label: 'Dashboard',     href: '/admin/dashboard',              icon: <Home className="w-5 h-5" /> },
+  { label: 'Task',          href: '/admin/dashboard/tasks',         icon: <CalendarCheck className="w-5 h-5" /> },
+  { label: 'Users',         href: '/admin/dashboard/user',          icon: <Users className="w-5 h-5" /> },
+  { label: 'Subscriptions', href: '/admin/dashboard/subscriptions', icon: <CreditCard className="w-5 h-5" /> },
+  { label: 'Reports',       href: '/admin/dashboard/report-user',   icon: <ShieldAlert className="w-5 h-5" /> },
+  { label: 'Notifications', href: '/admin/dashboard/notifications', icon: <Bell className="w-5 h-5" /> },
+  { label: 'Settings',      href: '/admin/dashboard/settings',      icon: <Settings className="w-5 h-5" /> },
+];
+
 export default function AdminSidebar() {
-  const navItems: NavItem[] = [
-    {
-      label: 'Dashboard',
-      href: '#',
-      icon: <Home className="w-5 h-5" />,
-      active: true,
-    },
-    {
-      label: 'User',
-      href: '/admin/dashboard/user',
-      icon: <MapPin className="w-5 h-5" />,
-    },
-    {
-      label: 'Role & Admin',
-      href: '/admin/dashboard/role-admin',
-      icon: <ClipboardCheck className="w-5 h-5" />,
-    },
-    {
-      label: 'Content Manager',
-      href: '#',
-      icon: <CreditCard className="w-5 h-5" />,
-    },
-    {
-      label: 'Submissions',
-      href: '#',
-      icon: <BarChart2 className="w-5 h-5" />,
-    },
-    {
-      label: 'Analytics',
-      href: '#',
-      icon: <HelpCircle className="w-5 h-5" />,
-    },
-    {
-      label: 'Settings',
-      href: '#',
-      icon: <Settings className="w-5 h-5" />,
-    },
-  ];
+  const pathname = usePathname();
+
+  // Lazy initializer reads matchMedia once on mount — avoids setState inside effect body
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !window.matchMedia('(min-width: 1024px)').matches;
+  });
+
+  // Only subscribe to future breakpoint changes — no synchronous setState in body
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const handler = (e: MediaQueryListEvent) => setCollapsed(!e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const isActive = (href: string) => {
+    if (href === '/admin/dashboard') return pathname === href;
+    return pathname.startsWith(href);
+  };
 
   return (
-    <aside className="w-[260px] flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
-      {/* Sidebar Header / Brand */}
-      <div className="h-[72px] px-6 flex items-center justify-between cursor-pointer">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-orange rounded flex items-center justify-center text-white font-bold text-xs transform -rotate-12">
+    <aside
+      style={{ width: collapsed ? '64px' : '260px' }}
+      className="relative flex flex-col bg-white border-r border-gray-200 min-h-screen flex-shrink-0 transition-[width] duration-300 ease-in-out overflow-visible"
+    >
+      {/* ── Brand ── */}
+      <div className="h-[72px] flex items-center justify-center px-0 overflow-hidden">
+        {collapsed ? (
+          /* Collapsed: just the logo mark, centered */
+          <div className="w-8 h-8 bg-orange rounded flex items-center justify-center text-white font-bold text-xs -rotate-12 shrink-0">
             99
           </div>
-          <span className="font-bold text-[15px]">99 Mint Admin</span>
-        </div>
-        <ChevronDown className="w-4 h-4 text-textGray" />
+        ) : (
+          /* Expanded: logo + text */
+          <div className="flex items-center gap-3 w-full px-6">
+            <div className="w-8 h-8 bg-orange rounded flex items-center justify-center text-white font-bold text-xs -rotate-12 shrink-0">
+              99
+            </div>
+            <span className="font-bold text-[15px] whitespace-nowrap">99 Mint Admin</span>
+          </div>
+        )}
       </div>
 
       {/* Divider */}
-      <div className="px-6 mb-4">
-        <div className="h-px w-full bg-gray-200" />
-      </div>
+      <div className="mx-3 mb-4 h-px bg-gray-200" />
 
-      {/* Sidebar Navigation */}
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
-          <a
-            key={item.label}
-            href={item.href}
-            className={
-              item.active
-                ? 'flex items-center gap-3 px-4 py-3 rounded-xl bg-iconBg text-orange font-medium transition-colors'
-                : 'flex items-center gap-3 px-4 py-3 rounded-xl text-textGray hover:bg-gray-50 hover:text-textBlack transition-colors'
-            }
-          >
-            {item.icon}
-            <span className="text-sm">{item.label}</span>
-          </a>
-        ))}
+      {/* ── Nav ── */}
+      <nav className="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto overflow-x-visible">
+        {navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <a
+              key={item.label}
+              href={item.href}
+              className={`group relative flex items-center rounded-xl transition-colors duration-150 ${
+                collapsed ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-3'
+              } ${
+                active
+                  ? 'bg-iconBg text-orange font-medium'
+                  : 'text-textGray hover:bg-gray-50 hover:text-textBlack'
+              }`}
+            >
+              {/* Icon */}
+              <span className="shrink-0">{item.icon}</span>
+
+              {/* Label — only when expanded */}
+              {!collapsed && (
+                <span className="text-sm whitespace-nowrap">{item.label}</span>
+              )}
+
+              {/* Tooltip — only when collapsed */}
+              {collapsed && (
+                <span
+                  className="
+                    pointer-events-none absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2
+                    z-[9999] bg-gray-900 text-white text-xs font-medium
+                    px-2.5 py-1.5 rounded-lg whitespace-nowrap
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-150
+                    shadow-lg
+                  "
+                >
+                  {item.label}
+                  {/* Left arrow */}
+                  <span className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-gray-900" />
+                </span>
+              )}
+            </a>
+          );
+        })}
       </nav>
+
+      {/* ── Toggle button ── */}
+      <div className="p-2 pb-6">
+        <button
+          type="button"
+          onClick={() => setCollapsed((p) => !p)}
+          className={`w-full flex items-center rounded-xl border border-gray-200 text-textGray hover:bg-gray-50 hover:text-textBlack transition-colors py-2.5 ${
+            collapsed ? 'justify-center px-0' : 'justify-center gap-2 px-3'
+          }`}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <span className="text-xs font-medium">Collapse</span>
+            </>
+          )}
+        </button>
+      </div>
     </aside>
   );
 }
