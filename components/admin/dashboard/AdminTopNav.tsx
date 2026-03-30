@@ -10,7 +10,7 @@ type AdminTopNavProps = {
 
 export default function AdminTopNav({
   userName = 'Jerremy Hage',
-  roleLabel = 'Super Admin',
+  roleLabel = 'Admin',
   avatarSrc = '/assets/images/user.png',
 }: AdminTopNavProps) {
   return (
@@ -49,11 +49,11 @@ export default function AdminTopNav({
               className="object-cover"
             />
           </div>
-          <div className="hidden sm:flex flex-col">
+         <div className="flex flex-col">
             <span className="text-sm font-semibold text-textBlack">{userName}</span>
             <span className="text-xs text-textGray font-medium">{roleLabel}</span>
           </div>
-          <ChevronDown className="w-4 h-4 text-textGray ml-0 sm:ml-1" />
+          {/* <ChevronDown className="w-4 h-4 text-textGray ml-0 sm:ml-1" /> */}
         </div>
       </div>
     </header>

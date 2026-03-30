@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Briefcase, DollarSign, MessageSquare, Users } from 'lucide-react';
+import { Briefcase, DollarSign, Users } from 'lucide-react';
 import EcosystemPulseStatCard from '@/components/admin/dashboard/DashboardAnalytics/StatCard';
 import EcosystemPulseTrendsGraph from '@/components/admin/dashboard/DashboardAnalytics/TrendsGraph';
 import EcosystemPulseTasksChart from '@/components/admin/dashboard/DashboardAnalytics/Chart';
@@ -29,7 +29,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <EcosystemPulseStatCard
           title="Total Users"
           value="14,285"
@@ -57,14 +57,14 @@ export default function DashboardPage() {
           changeLabel="ongoing now"
         />
 
-        <EcosystemPulseStatCard
+        {/* <EcosystemPulseStatCard
           title="Messages"
           value="842"
           icon={<MessageSquare className="w-5 h-5" />}
           iconContainerClassName="bg-purple-100 text-purple-500"
           changePercent="1.5%"
           changeLabel="ongoing now"
-        />
+        /> */}
       </div>
 
       {/* ── Main charts row ── */}

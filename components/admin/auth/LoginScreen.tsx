@@ -30,7 +30,7 @@ const LoginScreen: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     console.log("Login:", data, "Remember:", rememberMe);
-    router.push("/dashboard");
+    router.push("/admin/dashboard");
   };
 
   return (
