@@ -1,4 +1,5 @@
-import { Bell, ChevronDown, Search } from 'lucide-react';
+"use client";
+import {  ChevronDown, Search } from 'lucide-react';
 import Image from 'next/image';
 
 type AdminTopNavProps = {
@@ -13,9 +14,9 @@ export default function AdminTopNav({
   avatarSrc = '/assets/images/user.png',
 }: AdminTopNavProps) {
   return (
-    <header className="h-[72px] border-b border-gray-200 bg-white flex items-center justify-between px-8">
+    <header className="h-[72px] border-b border-gray-200 bg-white flex items-center justify-between px-4 sm:px-6 md:px-8">
       {/* Search Bar */}
-      <div className="flex-1 max-w-[400px]">
+      <div className="w-[180px] sm:w-[260px] md:w-[400px]">
         <div className="relative flex items-center w-full h-11 rounded-lg bg-inputBg overflow-hidden focus-within:ring-2 focus-within:ring-orange transition-all">
           <div className="grid place-items-center h-full w-12 text-textGray">
             <Search className="w-5 h-5" />
@@ -30,16 +31,16 @@ export default function AdminTopNav({
       </div>
 
       {/* Right Side Actions */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-6">
         {/* Notification Bell */}
-        <button className="relative p-2.5 rounded-full border border-gray-200 text-textGray hover:bg-gray-50 transition-colors">
+        {/* <button className="relative p-2.5 rounded-full border border-gray-200 text-textGray hover:bg-gray-50 transition-colors">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-orange border-2 border-white rounded-full" />
-        </button>
+        </button> */}
 
         {/* Profile Dropdown */}
-        <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-iconBg relative">
+        <div className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-iconBg relative">
             <Image
               src={avatarSrc}
               alt={userName}
@@ -48,11 +49,11 @@ export default function AdminTopNav({
               className="object-cover"
             />
           </div>
-          <div className="flex flex-col">
+          <div className="hidden sm:flex flex-col">
             <span className="text-sm font-semibold text-textBlack">{userName}</span>
             <span className="text-xs text-textGray font-medium">{roleLabel}</span>
           </div>
-          <ChevronDown className="w-4 h-4 text-textGray ml-1" />
+          <ChevronDown className="w-4 h-4 text-textGray ml-0 sm:ml-1" />
         </div>
       </div>
     </header>

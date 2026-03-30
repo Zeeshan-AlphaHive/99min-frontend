@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import { ArrowUpFromDot} from 'lucide-react';
+import { ArrowUpFromDot } from 'lucide-react';
 
 type EcosystemPulseStatCardProps = {
   title: string;
@@ -19,20 +21,23 @@ export default function EcosystemPulseStatCard({
   changeLabel,
 }: EcosystemPulseStatCardProps) {
   return (
-    <div className="p-5 border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col justify-between">
+    <div className="p-5 border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col justify-between min-h-[120px]">
       <div className="flex justify-between items-start mb-4">
         <div>
           <p className="text-sm font-medium text-textGray mb-1">{title}</p>
           <h3 className="text-2xl font-bold text-textBlack">{value}</h3>
         </div>
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconContainerClassName}`}>
+        <div
+          className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconContainerClassName}`}
+        >
           {icon}
         </div>
       </div>
 
       <div className="flex items-center text-sm">
-        <span className="text-green-500 font-medium flex items-center">
-          <ArrowUpFromDot className="w-4 h-4 mr-1" /> {changePercent}
+        <span className="text-green-500 font-medium flex items-center gap-0.5">
+          <ArrowUpFromDot className="w-4 h-4" />
+          {changePercent}
         </span>
         <span className="text-textGray ml-1">{changeLabel}</span>
       </div>
