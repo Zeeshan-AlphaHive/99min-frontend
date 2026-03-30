@@ -13,10 +13,10 @@ const AuthScreen: React.FC = () => {
   return (
     <div className="relative min-h-screen bg-white flex flex-col items-center justify-center px-6 py-10">
       <div className="absolute top-6 left-6 z-40">
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-lightGreen text-green">
+        {/* <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-lightGreen text-green">
           <Check className="w-4 h-4" strokeWidth={3} />
           {tr(en.auth.freeLabel)}
-        </span>
+        </span> */}
       </div>
 
       {/* Language Dropdown - Top Right */}
