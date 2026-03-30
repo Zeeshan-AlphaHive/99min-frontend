@@ -1,5 +1,5 @@
 "use client";
-import {  ChevronDown, Search } from 'lucide-react';
+import {  Search } from 'lucide-react';
 import Image from 'next/image';
 
 type AdminTopNavProps = {
