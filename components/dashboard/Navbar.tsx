@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, User, Menu, X, MessageSquare } from "lucide-react";
+import { Bell, User, Menu, X, MessageSquare, Search } from "lucide-react";
 import TicketBadge from "./TicketBadge";
 import LanguageDropdown from "./LanguageDropdown";
 import { useI18n } from "@/contexts/i18n-context";
@@ -18,6 +18,9 @@ const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { tr } = useI18n();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const isSettingsRoute = pathname?.startsWith("/dashboard/settings");
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40">
@@ -29,14 +32,16 @@ const Navbar: React.FC = () => {
             <TicketBadge />
 
             {/* Search Bar - Hidden on mobile, shown on md+ */}
-            {/* <div className="relative flex-1 max-w-md hidden md:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-textGray" />
-              <input
-                type="text"
-                placeholder="Search tasks..."
-                className="w-full pl-10 pr-4 py-2.5 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-textBlack placeholder:text-textGray"
-              />
-            </div> */}
+            {!isSettingsRoute && (
+              <div className="relative flex-1 max-w-md hidden md:block">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-textGray" />
+                <input
+                  type="text"
+                  placeholder={tr("Search tasks...")}
+                  className="w-full pl-10 pr-4 py-2.5 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-textBlack placeholder:text-textGray"
+                />
+              </div>
+            )}
           </div>
 
           {/* Middle Section: Navigation Links - Hidden on mobile, shown on lg+ */}
@@ -78,13 +83,15 @@ const Navbar: React.FC = () => {
           {/* Right Section: Icons + Menu */}
           <div className="flex items-center gap-2 md:gap-4">
             {/* Search Icon Button - Only on mobile */}
-            {/* <button 
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5 text-textGray" />
-            </button> */}
+            {!isSettingsRoute && (
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5 text-textGray" />
+              </button>
+            )}
 
             {/* Language Dropdown - Hidden on mobile */}
             {/* Translation Button - Mobile */}
@@ -145,19 +152,19 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Search Bar - Shown when search icon is clicked */}
-        {/* {isSearchOpen && (
+        {!isSettingsRoute && isSearchOpen && (
           <div className="mt-3 md:hidden">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-textGray" />
               <input
                 type="text"
-                placeholder="Search tasks..."
+                placeholder={tr("Search tasks...")}
                 className="w-full pl-10 pr-4 py-2.5 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-textBlack placeholder:text-textGray"
                 autoFocus
               />
             </div>
           </div>
-        )} */}
+        )}
 
         {/* Mobile Menu - Navigation Links */}
         {isMobileMenuOpen && (

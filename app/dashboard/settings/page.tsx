@@ -28,6 +28,8 @@ const SettingsPage: React.FC = () => {
   const { tr } = useI18n();
   const { logout } = useAuth();
 
+  const layoutBackgroundClassName = "bg-inputBg";
+
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
@@ -48,7 +50,7 @@ const SettingsPage: React.FC = () => {
 
   if (showProfile) {
     return (
-      <DashboardLayout>
+      <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
       <ProfilePage onBack={() => setShowProfile(false)} onSubmit={handleProfileSubmit} />
       </DashboardLayout>
     );
@@ -56,7 +58,7 @@ const SettingsPage: React.FC = () => {
 
   if (showNotifications) {
     return (
-      <DashboardLayout>
+      <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
         <NotificationsPage onBack={() => setShowNotifications(false)} />
       </DashboardLayout>
     );
@@ -64,7 +66,7 @@ const SettingsPage: React.FC = () => {
 
   if (showLocation) {
     return (
-      <DashboardLayout>
+      <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
         <LocationPage onBack={() => setShowLocation(false)} />
       </DashboardLayout>
     );
@@ -72,7 +74,7 @@ const SettingsPage: React.FC = () => {
 
   if (showPrivacy) {
     return (
-      <DashboardLayout>
+      <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
         <PrivacyPage onBack={() => setShowPrivacy(false)} />
       </DashboardLayout>
     );
@@ -80,7 +82,7 @@ const SettingsPage: React.FC = () => {
 
   if (showHelpCenter) {
     return (
-      <DashboardLayout>
+      <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
         <HelpCenterPage onBack={() => setShowHelpCenter(false)} />
       </DashboardLayout>
     );
@@ -88,7 +90,7 @@ const SettingsPage: React.FC = () => {
 
   if (showPaymentMethods) {
     return (
-      <DashboardLayout>
+      <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
         <PaymentMethodsPage onBack={() => setShowPaymentMethods(false)} />
       </DashboardLayout>
     );
@@ -99,7 +101,7 @@ const SettingsPage: React.FC = () => {
   const displayInitial = profile?.name?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <DashboardLayout>
+    <DashboardLayout backgroundClassName={layoutBackgroundClassName}>
       <div className="min-h-screen bg-inputBg">
         <div className="max-w-4xl bg-white mx-auto px-4">
           <SettingsHeader />
