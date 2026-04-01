@@ -13,6 +13,8 @@ import DeleteAdModal from "@/components/dashboard/DeleteAdModal";
 import { useTasks, useShareTask, useReportTask, useDeleteTask } from "@/hooks/UseTasks";
 import { useAuth } from "@/store/auth-context";
 import type { ApiTask } from "@/utils/api/tasks.api";
+import { useSearch } from "@/contexts/search-context";
+import { useDebounce } from "@/hooks/UseDebounce";
 
 function formatTimeLeft(expiresAt: string): string {
   const diff = new Date(expiresAt).getTime() - Date.now();
@@ -35,8 +37,8 @@ interface TaskWithOwner extends TaskDetailsData { createdBy: string; posterUserI
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function buildMediaUrl(path?: string): string {
   if (!path) return "/placeholder.png";
-  if (path.startsWith("http")) return path; // already absolute
-  return `${API_URL}/${path.replace(/^\//, "")}`; // prepend base URL
+  if (path.startsWith("http")) return path;
+  return `${API_URL}/${path.replace(/^\//, "")}`;
 }
 function mapApiTask(task: ApiTask): TaskWithOwner {
   return {
@@ -52,6 +54,8 @@ function mapApiTask(task: ApiTask): TaskWithOwner {
 const ExplorePage: React.FC = () => {
   const router = useRouter();
   const t = useTranslations();
+  const { query } = useSearch();
+  const debouncedQuery = useDebounce(query, 400);
   const [selectedTask, setSelectedTask] = useState<TaskWithOwner | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -60,7 +64,11 @@ const ExplorePage: React.FC = () => {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const { user } = useAuth();
   const currentUserId = user?._id ?? "";
-  const { data, isLoading, error, refetch } = useTasks({ status: "active", sort: "newest" });
+  const { data, isLoading, error, refetch } = useTasks({
+    status: "active",
+    sort: "newest",
+    q: debouncedQuery || undefined,
+  });
   const tasks: TaskWithOwner[] = (data?.data ?? []).map(mapApiTask);
   const { mutate: recordShare } = useShareTask();
   const { mutateAsync: submitReport } = useReportTask(activeTaskId ?? "");
@@ -107,13 +115,19 @@ const ExplorePage: React.FC = () => {
       <div className="bg-inputBg p-6">
         <div className="max-w-6xl mx-auto">
           <ExploreHeader activeTasksCount={tasks.length} />
-          {isLoading && <p className="text-center text-textGray py-12">{t("task.loadingTasks")}</p>}
+          {isLoading && (
+            <p className="text-center text-textGray py-12">
+              {debouncedQuery ? `Searching for "${debouncedQuery}"...` : t("task.loadingTasks")}
+            </p>
+          )}
           {error && <p className="text-center text-red-500 py-12">{error instanceof Error ? error.message : t("task.failedLoad")}</p>}
           {!isLoading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <PinnedTaskCard />
               {tasks.length === 0 ? (
-                <p className="text-textGray text-center col-span-2 py-12">{t("task.noTasksFound")}</p>
+                <p className="text-textGray text-center col-span-2 py-12">
+                  {debouncedQuery ? `No tasks found for "${debouncedQuery}"` : t("task.noTasksFound")}
+                </p>
               ) : (
                 tasks.map((task) => (
                   <TaskCard key={task._id} {...task} isOwner={task.createdBy === currentUserId}
