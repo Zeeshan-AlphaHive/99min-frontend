@@ -8,7 +8,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
-  backgroundClassName = "bg-[#242424]",
+  backgroundClassName = "bg-inputBg",  // ← change from bg-[#242424] to bg-inputBg (or bg-white)
 }) => {
   return (
     <div className={`min-h-screen ${backgroundClassName} pt-20`}>

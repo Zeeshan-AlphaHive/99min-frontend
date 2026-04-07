@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { MapPin, Tag, MessageCircle, LucideIcon, MessageSquare } from 'lucide-react';
+import { MapPin, Tag, LucideIcon, MessageSquare } from 'lucide-react';
 import TaskDetailCard from './TaskDetailCard';
 import { useI18n } from '@/contexts/i18n-context';
 
@@ -31,14 +31,14 @@ const TaskDetailCards: React.FC<TaskDetailCardsProps> = ({ location, category, i
       value: category,
     },
     {
-      icon: MessageSquare ,
+      icon: MessageSquare,
       label: tr('Responses'),
       value: tr(`${interest} active`),
     },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
       {cards.map((card, index) => (
         <TaskDetailCard
           key={index}
@@ -52,4 +52,3 @@ const TaskDetailCards: React.FC<TaskDetailCardsProps> = ({ location, category, i
 };
 
 export default TaskDetailCards;
-

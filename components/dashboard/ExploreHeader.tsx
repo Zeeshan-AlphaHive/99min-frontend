@@ -21,13 +21,13 @@ const ExploreHeader: React.FC<ExploreHeaderProps> = ({
         <h1 className="text-textGray text-sm font-medium">
           {tr("Discover tasks ending soon")}
         </h1>
-        <button
+        {/* <button
           onClick={onFilterClick}
           className="flex items-center bg-lightGrey gap-2  border border-gray-300 px-4 py-2 rounded-xl  text-sm font-bold text-textBlack hover:bg-gray-50 transition-colors"
         >
           <Filter className="w-5 h-5 " />
           {tr("Filters")}
-        </button>
+        </button> */}
       </div>
 
       <div className="flex items-center gap-2 text-textBlack font-bold mb-6">

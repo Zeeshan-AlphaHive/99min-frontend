@@ -5,7 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useI18n } from '@/contexts/i18n-context';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+    label?: ReactNode; 
   variant?: 'default' | 'alt';
   showPasswordToggle?: boolean;
   error?: string;
@@ -32,7 +32,11 @@ const Input: React.FC<InputProps> = ({
     ? (showPassword ? 'text' : 'password') 
     : type;
 
-  const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+  const inputId =
+  id ||
+  (typeof label === 'string'
+    ? label.toLowerCase().replace(/\s+/g, '-')
+    : undefined);
 
   const baseClasses = 'w-full rounded-xl py-3.5 px-4 leading-tight focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all duration-200';
   const variantClasses = {
@@ -65,13 +69,13 @@ const Input: React.FC<InputProps> = ({
   return (
     <div className="mb-4">
       {label && (
-        <label 
-          htmlFor={inputId} 
-          className="block text-textBlack text-sm font-bold mb-2 ml-1"
-        >
-          {tr(label)}
-        </label>
-      )}
+  <label
+    htmlFor={inputId}
+    className="block text-textBlack text-sm font-bold mb-2 ml-1"
+  >
+    {typeof label === 'string' ? tr(label) : label}
+  </label>
+)}
       <div className="relative">
         {icon && iconPosition === 'left' && (
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textGray">

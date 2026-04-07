@@ -82,10 +82,12 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false
   return (
     <div className="min-h-screen bg-white">
       <TaskDetailsHeader onBack={onBack} onReport={!isOwner ? () => setIsReportModalOpen(true) : undefined} onShare={!isOwner ? () => setIsShareModalOpen(true) : undefined} />
-      <div className="max-w-7xl mx-auto pb-24">
 
-        {/* ─── Hero Media ───────────────────────────────────────────────── */}
-        <div className="relative w-full h-96 mb-0 bg-gray-100 rounded-b-4xl overflow-hidden">
+      {/* ─── Main content wrapper: centered, max-width, responsive padding ── */}
+      <div className="max-w-7xl mx-auto pb-28 md:pb-32">
+
+        {/* ─── Hero Media: fluid height across breakpoints ───────────────── */}
+        <div className="relative w-full h-64 sm:h-80 md:h-[420px] lg:h-[500px] mb-0 bg-gray-100 rounded-b-4xl overflow-hidden">
           {isVideo ? (
             <>
               <video
@@ -142,28 +144,47 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false
           )}
         </div>
 
-        <TaskHeader title={title} price={price} urgent={urgent} postedTime={postedTime} timeLeft={timeLeft} />
-        <div className="bg-white px-6 pb-6">
-          <TaskDetailCards location={location} category={category} interest={interest} />
-          <TaskDescription description={description} />
-          <TaskTags tags={tags} />
-          {!isOwner && (
-            <div className="mt-6">
-              <label htmlFor="message" className="block text-sm font-bold text-gray-900 mb-2">{t("task.sendMessage")}</label>
-              <textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)}
-                placeholder={t("task.messagePlaceholder")}
-                className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange resize-none"
-                rows={4} disabled={sending} />
-              {sendError && <p className="text-red-500 text-xs mt-1">{sendError}</p>}
-              {!task.posterUserId && <p className="text-textGray text-xs mt-1">{t("task.cannotMessage")}</p>}
-              <button type="button" onClick={handleSendMessage} disabled={sending || !message.trim() || !task.posterUserId}
-                className="mt-2 bg-orange text-white px-4 py-2 rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                {sending ? <><Loader2 className="w-4 h-4 animate-spin" />{t("task.sending")}</> : t("task.send")}
-              </button>
-            </div>
-          )}
+        {/* ─── Content area: responsive horizontal padding ───────────────── */}
+        <div className="px-4 sm:px-6 md:px-8 lg:px-10">
+          <TaskHeader title={title} price={price} urgent={urgent} postedTime={postedTime} timeLeft={timeLeft} />
+
+          <div className="bg-white pb-6">
+            {/* ─── Detail cards: 2-col on tablet, flows naturally ────────── */}
+            <TaskDetailCards location={location} category={category} interest={interest} />
+            <TaskDescription description={description} />
+            {/* <TaskTags tags={tags} /> */}
+
+            {!isOwner && (
+              <div className="mt-6">
+                <label htmlFor="message" className="block text-sm font-bold text-gray-900 mb-2">
+                  {t("task.sendMessage")}
+                </label>
+                {/* ─── Textarea: wider on tablet/desktop ─────────────────── */}
+                <textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={t("task.messagePlaceholder")}
+                  className="w-full md:max-w-2xl border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange resize-none"
+                  rows={4}
+                  disabled={sending}
+                />
+                {sendError && <p className="text-red-500 text-xs mt-1">{sendError}</p>}
+                {!task.posterUserId && <p className="text-textGray text-xs mt-1">{t("task.cannotMessage")}</p>}
+                <button
+                  type="button"
+                  onClick={handleSendMessage}
+                  disabled={sending || !message.trim() || !task.posterUserId}
+                  className="mt-2 bg-orange text-white px-5 py-2.5 rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm md:text-base"
+                >
+                  {sending ? <><Loader2 className="w-4 h-4 animate-spin" />{t("task.sending")}</> : t("task.send")}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
       {!isOwner && <TaskDetailsCTA />}
       <ReportAdModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} onSubmit={handleReportSubmit} />
       <ShareAdModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} onShare={(platform) => { recordShare(task._id); console.log('Shared on:', platform); }} />

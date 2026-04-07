@@ -75,16 +75,16 @@ export default function AdminSidebar() {
     />
   ) : (
     <div className="flex items-center gap-3 w-full px-6">
-      <div className="scale-50 origin-left">
+      {/* <div className="scale-50 origin-left"> */}
         <TicketBadge />
-      </div>
+      {/* </div> */}
       <span className="font-bold text-[20px] whitespace-nowrap">99Min Admin</span>
     </div>
   )}
 </div>
 
       {/* Divider */}
-      <div className="mx-3 mb-4 h-px bg-gray-200" />
+      <div className="mx-full mb-4 h-px bg-gray-200" />
 
       {/* ── Nav ── */}
       <nav className="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto overflow-x-visible">

@@ -24,46 +24,64 @@ const Navbar: React.FC = () => {
 
   const isSettingsRoute = pathname?.startsWith("/dashboard/settings");
 
+  const iconLinks = [
+    { href: "/dashboard/messages", icon: MessageSquare, label: "Messages", route: "/dashboard/messages" },
+    { href: "/dashboard/notifications", icon: Bell, label: "Notifications", route: "/dashboard/notifications" },
+    { href: "/dashboard/settings", icon: User, label: "Settings", route: "/dashboard/settings" },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40">
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+    <nav className="fixed top-0 left-0 right-0 bg-white z-40 shadow-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+
+        {/* ── Main row ─────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
+
+          {/* ── Logo ──────────────────────────────────────────────────── */}
+          <div className="flex-shrink-0">
             <TicketBadge />
-            {!isSettingsRoute && (
-              <div className="relative flex-1 max-w-md hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-textGray" />
-                <input
-                  type="text"
-                  placeholder={tr("Search tasks...")}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-textBlack placeholder:text-textGray"
-                />
-              </div>
-            )}
           </div>
 
-          <div className="hidden lg:flex items-center gap-6 mx-4">
+          {/* ── Search bar: hidden on mobile, visible md+ ─────────────── */}
+          {!isSettingsRoute && (
+            <div className="relative flex-1 max-w-xs lg:max-w-md hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textGray" />
+              <input
+                type="text"
+                placeholder={tr("Search tasks...")}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-sm text-textBlack placeholder:text-textGray"
+              />
+            </div>
+          )}
+
+          {/* ── Nav links: desktop only (lg+) ─────────────────────────── */}
+          <div className="hidden lg:flex items-center gap-6 flex-shrink-0">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || pathname?.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm transition-colors relative pb-1 ${
-                    isActive ? "text-textBlack font-bold" : "text-textGray hover:text-textBlack font-medium"
+                  className={`text-sm transition-colors relative pb-1 whitespace-nowrap ${
+                    isActive
+                      ? "text-textBlack font-bold"
+                      : "text-textGray hover:text-textBlack font-medium"
                   }`}
                 >
                   {tr(link.label)}
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange"></span>
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange rounded-full" />
                   )}
                 </Link>
               );
             })}
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          {/* ── Right-side actions ────────────────────────────────────── */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+
+            {/* Mobile: search toggle */}
             {!isSettingsRoute && (
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -74,60 +92,59 @@ const Navbar: React.FC = () => {
               </button>
             )}
 
+            {/* Language dropdown */}
             <div className="md:hidden">
               <LanguageDropdown compact />
             </div>
-
             <div className="hidden md:block">
               <LanguageDropdown />
             </div>
 
-            <Link href="/dashboard/messages">
-              <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                <MessageSquare className={`w-5 h-5 ${pathname === "/dashboard/messages" ? "text-orange" : "text-textGray"}`} />
-              </button>
-            </Link>
+            {/* Icon links: desktop only (lg+) — shown in hamburger on smaller screens */}
+            {iconLinks.map(({ href, icon: Icon, route }) => (
+              <Link key={href} href={href} className="hidden lg:block">
+                <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                  <Icon className={`w-5 h-5 ${pathname === route ? "text-orange" : "text-textGray"}`} />
+                </button>
+              </Link>
+            ))}
 
-            <Link href="/dashboard/notifications">
-              <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors relative">
-                <Bell className={`w-5 h-5 ${pathname === "/dashboard/notifications" ? "text-orange" : "text-textGray"}`} />
-              </button>
-            </Link>
-
-            <Link href="/dashboard/settings">
-              <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                <User className={`w-5 h-5 ${pathname === "/dashboard/settings" ? "text-orange" : "text-textGray"}`} />
-              </button>
-            </Link>
-
+            {/* Hamburger: visible below lg */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors ml-2"
+              className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
               aria-label="Menu"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5 text-textBlack" /> : <Menu className="w-5 h-5 text-textBlack" />}
+              {isMobileMenuOpen
+                ? <X className="w-5 h-5 text-textBlack" />
+                : <Menu className="w-5 h-5 text-textBlack" />
+              }
             </button>
           </div>
         </div>
 
+        {/* ── Mobile search bar ────────────────────────────────────────── */}
         {!isSettingsRoute && isSearchOpen && (
-          <div className="mt-3 md:hidden">
+          <div className="md:hidden py-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-textGray" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textGray" />
               <input
                 type="text"
                 placeholder={tr("Search tasks...")}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-textBlack placeholder:text-textGray"
+                className="w-full pl-9 pr-4 py-2.5 bg-inputBg rounded-xl border-none focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all text-sm text-textBlack placeholder:text-textGray"
                 autoFocus
               />
             </div>
           </div>
         )}
 
+        {/* ── Hamburger dropdown menu ──────────────────────────────────── */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 pt-4 border-t border-gray-200 pb-2">
-            <div className="flex flex-col gap-4">
+          <div className="lg:hidden py-3">
+            <div className="flex flex-col gap-1">
+
+              {/* Nav links */}
               {navLinks.map((link) => {
                 const isActive = pathname === link.href || pathname?.startsWith(link.href);
                 return (
@@ -135,11 +152,33 @@ const Navbar: React.FC = () => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`font-bold text-base transition-colors py-2 px-2 rounded-lg ${
-                      isActive ? "text-orange bg-iconBg" : "text-textGray hover:text-textBlack hover:bg-gray-50"
+                    className={`font-semibold text-sm py-2.5 px-3 rounded-lg transition-colors ${
+                      isActive
+                        ? "text-orange bg-orange/5"
+                        : "text-textGray hover:text-textBlack hover:bg-gray-50"
                     }`}
                   >
                     {tr(link.label)}
+                  </Link>
+                );
+              })}
+
+              {/* Icon links (messages, notifications, settings) */}
+              {iconLinks.map(({ href, icon: Icon, label, route }) => {
+                const isActive = pathname === route;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 font-semibold text-sm py-2.5 px-3 rounded-lg transition-colors ${
+                      isActive
+                        ? "text-orange bg-orange/5"
+                        : "text-textGray hover:text-textBlack hover:bg-gray-50"
+                    }`}
+                  >
+                    {/* <Icon className="w-4 h-4" /> */}
+                    {tr(label)}
                   </Link>
                 );
               })}

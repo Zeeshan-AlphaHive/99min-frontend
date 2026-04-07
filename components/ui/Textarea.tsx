@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
+  label?: ReactNode; 
   variant?: 'default' | 'alt';
   error?: string;
 }
@@ -14,7 +14,10 @@ const Textarea: React.FC<TextareaProps> = ({
   id,
   ...props
 }) => {
-  const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-');
+  const textareaId = id ||
+  (typeof label === 'string'
+    ? label.toLowerCase().replace(/\s+/g, '-')
+    : undefined);
 
   const baseClasses = 'w-full rounded-xl py-3.5 px-4 leading-tight focus:outline-none focus:ring-2 focus:ring-orange focus:bg-white transition-all duration-200 resize-none';
   const variantClasses = {
