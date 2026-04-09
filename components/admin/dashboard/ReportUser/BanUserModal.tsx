@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { ShieldAlert } from 'lucide-react';
+import { banUser } from '@/utils/api/admin.moderation.api';
 
 type BanUserModalProps = {
   isOpen: boolean;
   onClose: () => void;
   userName: string;
+  userId: string | null;
 };
 
 const BAN_REASONS = [
@@ -18,17 +20,24 @@ const BAN_REASONS = [
   'Other',
 ];
 
-export default function BanUserModal({ isOpen, onClose, userName }: BanUserModalProps) {
+export default function BanUserModal({ isOpen, onClose, userName, userId }: BanUserModalProps) {
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleBan = () => {
-    if (!confirmed) return;
-    // handle ban logic here
-    onClose();
+  const handleBan = async () => {
+    if (!confirmed || !reason || submitting) return;
+    if (!userId) return;
+    try {
+      setSubmitting(true);
+      await banUser(userId, { reason, notes });
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -56,8 +65,8 @@ export default function BanUserModal({ isOpen, onClose, userName }: BanUserModal
         </h2>
         <p className="text-sm text-textGray text-center mb-6">
           This action will permanently block{' '}
-          <span className="font-semibold text-textBlack">{userName}</span> from the platform.
-          They will not be able to log in again.
+          <span className="font-semibold text-textBlack">{userName || 'this user'}</span> from the platform. They will
+          not be able to log in again.
         </p>
 
         {/* Reason dropdown */}
@@ -71,7 +80,9 @@ export default function BanUserModal({ isOpen, onClose, userName }: BanUserModal
               onChange={(e) => setReason(e.target.value)}
               className="w-full appearance-none px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-textBlack bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-300 transition"
             >
-              <option value="" disabled />
+              <option value="" disabled>
+                Select a reason…
+              </option>
               {BAN_REASONS.map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
@@ -80,6 +91,11 @@ export default function BanUserModal({ isOpen, onClose, userName }: BanUserModal
               ▾
             </span>
           </div>
+          {!userId && (
+            <p className="text-xs text-red-500 mt-2">
+              Unable to ban: missing user id.
+            </p>
+          )}
         </div>
 
         {/* Additional notes */}
@@ -121,10 +137,10 @@ export default function BanUserModal({ isOpen, onClose, userName }: BanUserModal
           <button
             type="button"
             onClick={handleBan}
-            disabled={!confirmed}
+            disabled={!confirmed || !reason || submitting || !userId}
             className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-sm font-medium text-white transition-colors"
           >
-            Ban User
+            {submitting ? 'Banning...' : 'Ban User'}
           </button>
         </div>
       </div>

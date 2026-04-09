@@ -1,19 +1,15 @@
 'use client';
 
 import React from 'react';
-import { X, MapPin, Clock, Users } from 'lucide-react';
-import Image from 'next/image';
+import { X } from 'lucide-react';
+import type { AdminTaskReport } from '@/utils/api/admin.reports.api';
+import { removeTask } from '@/utils/api/admin.moderation.api';
 
 type ReportDetailsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onBanUser: () => void;
-  user: {
-    name: string;
-    email: string;
-    plan: string;
-    location: string;
-  };
+  report: AdminTaskReport | null;
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -32,9 +28,19 @@ export default function ReportDetailsModal({
   isOpen,
   onClose,
   onBanUser,
-  user,
+  report,
 }: ReportDetailsModalProps) {
   if (!isOpen) return null;
+
+  const taskTitle = report?.taskId?.title || 'Unknown task';
+  const reporterName = report?.reporterUserId?.name || 'Unknown';
+  const reporterEmail = report?.reporterUserId?.email || '';
+  const reason = report?.reason || '—';
+  const details = report?.details?.trim() ? report.details : 'No additional details provided.';
+  const status = report?.status || 'pending';
+  const createdAt = report?.createdAt ? new Date(report.createdAt).toLocaleString() : '—';
+  const updatedAt = report?.updatedAt ? new Date(report.updatedAt).toLocaleString() : '—';
+  const taskId = report?.taskId?._id || null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -62,26 +68,19 @@ export default function ReportDetailsModal({
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
 
-          {/* Reported User */}
-          <div className='mt-3'>
-            <SectionLabel>Reported User</SectionLabel>
-            <div className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-xl">
-              <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-                <span className="text-base font-bold text-orange-500">
-                  {user.name.charAt(0)}
-                </span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-textBlack">{user.name}</p>
-                <p className="text-xs text-textGray mt-0.5">{user.email}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-500 rounded-md font-medium">
-                    {user.plan}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-textGray">
-                    <MapPin className="w-3 h-3 shrink-0" />
-                    {user.location}
-                  </span>
+          {/* Report summary */}
+          <div className="mt-3">
+            <SectionLabel>Reported Task</SectionLabel>
+            <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl">
+              <p className="text-sm font-semibold text-textBlack">{taskTitle}</p>
+              <div className="mt-2 grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-textGray">Status</p>
+                  <p className="text-sm font-medium text-textBlack">{status}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-textGray">Reason</p>
+                  <p className="text-sm font-medium text-textBlack">{reason}</p>
                 </div>
               </div>
             </div>
@@ -90,115 +89,67 @@ export default function ReportDetailsModal({
           <Divider />
 
           {/* Complaint */}
-          <div className='mt-3'>
-            <SectionLabel>
-              Complaint
-            </SectionLabel>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-textGray">Reason:</span>
-                <span className="text-xs px-2.5 py-0.5 bg-red-100 text-red-500 font-semibold rounded-md">
-                  Fraud
-                </span>
-              </div>
-              <span className="text-xs text-textGray">10m ago</span>
-            </div>
+          <div className="mt-3">
+            <SectionLabel>Complaint</SectionLabel>
             <p className="text-sm text-textGray bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 leading-relaxed">
-              User is asking for payment outside the platform and providing fake credentials.
+              {details}
             </p>
             <p className="text-xs text-textGray mt-3">
               Reported by:{' '}
-              <span className="font-semibold text-textBlack">Sarah Miller</span>
+              <span className="font-semibold text-textBlack">
+                {reporterName}{reporterEmail ? ` (${reporterEmail})` : ''}
+              </span>
             </p>
           </div>
 
           <Divider />
 
-          {/* Related Task */}
-          <div className='mt-3'>
-            <SectionLabel>Related Task</SectionLabel>
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
-              <div className="relative h-32 bg-gray-100">
-                <Image
-                  src="/assets/images/frame.png"
-                  alt="Task"
-                  fill
-                  className="object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          {/* Metadata */}
+          <div className="mt-3">
+            <SectionLabel>Metadata</SectionLabel>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                <p className="text-xs text-textGray">Created</p>
+                <p className="text-sm font-medium text-textBlack">{createdAt}</p>
               </div>
-              <div className="px-4 py-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-sm font-semibold text-orange">Fix leaky faucet</p>
-                  <p className="text-sm font-semibold text-orange">$50</p>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-textGray">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3 shrink-0" /> New York
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 shrink-0" /> 45m
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3 h-3 shrink-0" /> 12
-                  </span>
-                </div>
+              <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                <p className="text-xs text-textGray">Last updated</p>
+                <p className="text-sm font-medium text-textBlack">{updatedAt}</p>
               </div>
-            </div>
-          </div>
-
-          <Divider />
-
-          {/* Previous Reports */}
-          <div className='mt-3'>
-            <SectionLabel>Previous Reports</SectionLabel>
-            <div className="space-y-2">
-              {[
-                { reason: 'Spam', time: '2 days ago', status: 'Reviewed' },
-                { reason: 'Abuse', time: '2 weeks ago', status: 'Reviewed' },
-              ].map((r) => (
-                <div
-                  key={r.reason}
-                  className="flex items-center justify-between py-3 px-4 bg-gray-50 border border-gray-100 rounded-xl"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                      <span className="text-xs text-gray-500">⚑</span>
-                    </div>
-                    <span className="text-sm font-medium text-textBlack">{r.reason}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xs text-textGray">{r.time}</span>
-                    <span className="text-xs px-2.5 py-0.5 bg-gray-200 text-gray-500 rounded-md font-medium">
-                      {r.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
+        <div className="px-6 py-4 border-t border-gray-100 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-textBlack hover:bg-gray-50 transition-colors"
+            className="sm:flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-textBlack hover:bg-gray-50 transition-colors"
           >
-            Delete user
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!taskId) return;
+              await removeTask(taskId, { reason: "Removed due to report" });
+              onClose();
+            }}
+            className="sm:flex-1 py-2.5 bg-orange hover:opacity-90 rounded-xl text-sm font-medium text-white transition-colors"
+          >
+            Remove Task
           </button>
           <button
             type="button"
             onClick={onBanUser}
-            className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl text-sm font-medium text-white transition-colors"
+            className="sm:flex-1 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl text-sm font-medium text-white transition-colors"
           >
             Ban User
           </button>
+          </div>
         </div>
 
       </div>

@@ -8,6 +8,7 @@ export interface User {
   email: string;
   role: string;
   isVerified: boolean;
+  status?: "active" | "suspended" | "banned" | "deleted";
   avatarUrl: string | null;
   phone: string | null;
   createdAt: string;

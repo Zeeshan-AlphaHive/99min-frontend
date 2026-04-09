@@ -41,6 +41,8 @@ interface CreateTaskFormProps {
   onSubmit?: (data: FormData, files: File[]) => Promise<void>;
   initialData?: Partial<FormData>;
   isEditMode?: boolean;
+  submitDisabled?: boolean;
+  submitDisabledMessage?: string;
 }
 
 const defaultFormData: FormData = {
@@ -93,6 +95,8 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   onSubmit,
   initialData,
   isEditMode = false,
+  submitDisabled = false,
+  submitDisabledMessage,
 }) => {
   const router = useRouter();
   const { tr } = useI18n();
@@ -275,6 +279,11 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
+
+    if (submitDisabled) {
+      setSubmitError(submitDisabledMessage || tr("Your account is restricted. You can't post an ad right now."));
+      return;
+    }
 
     // Touch every required field so errors surface
     setTouched({ title: true, description: true, budget: true, location: true });
@@ -507,6 +516,12 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
         }
       />
 
+      {submitDisabled && (
+        <p className="text-red-500 text-sm text-center mt-4">
+          {submitDisabledMessage || tr("Your account is restricted. You can't post an ad right now.")}
+        </p>
+      )}
+
       {submitError && (
         <p className="text-red-500 text-sm text-center mt-4">{submitError}</p>
       )}
@@ -514,7 +529,7 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
       {/* ── Submit ── */}
       <div className="bg-white border-t border-gray-200 p-4 z-30">
         <div className="max-w-7xl mx-auto">
-          <Button type="submit" variant="primary" size="lg" fullWidth disabled={!isDirty}>
+          <Button type="submit" variant="primary" size="lg" fullWidth disabled={!isDirty || submitDisabled}>
             {isEditMode
               ? tr('Update Ad')
               : tr(`Post Ad (Expires in ${formData.duration === '90_mins' ? '90 mins' : '24 hours'})`)}

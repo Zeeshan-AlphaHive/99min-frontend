@@ -34,7 +34,11 @@ export async function silentRefresh(): Promise<boolean> {
 
   refreshPromise = (async () => {
     try {
-      const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
+      const isAdminArea =
+        typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+      const refreshEndpoint = isAdminArea ? "/api/admin/auth/refresh" : "/api/auth/refresh";
+
+      const res = await fetch(`${BASE_URL}${refreshEndpoint}`, {
         method: "POST",
         credentials: "include",
       });
@@ -86,7 +90,8 @@ if (res.status === 401) {
           window.location.pathname.startsWith(p)
         );
         if (!isPublicPath) {
-          window.location.href = "/auth/login";
+          const isAdminArea = window.location.pathname.startsWith("/admin");
+          window.location.href = isAdminArea ? "/admin/auth/login" : "/auth/login";
         }
       }
       throw new Error("Session expired. Please log in again.");
