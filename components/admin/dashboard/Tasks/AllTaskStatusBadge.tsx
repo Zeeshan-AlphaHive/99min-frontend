@@ -9,8 +9,8 @@ const statusStyles: Record<TaskStatus, string> = {
   Active: 'bg-green-100 text-green-600',
   Pending: 'bg-orange-100 text-orange-500',
   Expired: 'bg-gray-100 text-gray-500',
+  Removed: 'bg-red-100 text-red-500',
 };
-
 export default function AllTaskStatusBadge({ status }: AllTaskStatusBadgeProps) {
   return (
     <span
