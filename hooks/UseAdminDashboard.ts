@@ -4,7 +4,9 @@ import {
   fetchUserChart,
   fetchTaskChart,
   fetchRevenueChart,
+  fetchCategoryChart,
 } from '@/utils/api/admin.dashboard.api';
+
 
 export const useDashboardStats = () =>
   useQuery({ queryKey: ['dashboard-stats'], queryFn: fetchDashboardStats, staleTime: 60_000 });
@@ -17,3 +19,6 @@ export const useTaskChart = (period = '30d') =>
 
 export const useRevenueChart = (period = '12m') =>
   useQuery({ queryKey: ['dashboard-revenue-chart', period], queryFn: () => fetchRevenueChart(period) });
+
+export const useCategoryChart = () =>
+  useQuery({ queryKey: ['dashboard-category-chart'], queryFn: fetchCategoryChart });

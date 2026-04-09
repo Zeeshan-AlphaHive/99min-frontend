@@ -84,17 +84,7 @@ const columns: ColumnDef<AdminSubscription>[] = [
       </span>
     ),
   },
-  {
-    key: 'startDate', header: 'Start Date',
-    render: (row) => (
-      <span className="text-sm text-textGray">
-        {row.currentPeriodStart
-          ? new Date(row.currentPeriodStart).toISOString().split('T')[0]
-          : '—'}
-      </span>
-    ),
-  },
-  {
+   {
     key: 'status', header: 'Status',
     render: (row) => (
       <span className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ${statusStyles[row.status]}`}>
@@ -103,27 +93,53 @@ const columns: ColumnDef<AdminSubscription>[] = [
     ),
   },
   {
-    key: 'expiryDate', header: 'Expiry Date',
-    render: (row) => (
-      <span className="text-sm text-textGray">
-        {row.currentPeriodEnd
-          ? new Date(row.currentPeriodEnd).toISOString().split('T')[0]
-          : '—'}
-      </span>
-    ),
-  },
-  {
-    key: 'daysRemaining', header: 'Days Remaining',
-    render: (row) => {
-      const days = daysRemaining(row.currentPeriodEnd);
+  key: 'startDate', header: 'Start Date',
+  render: (row) => (
+    <span className="text-sm text-textGray">
+      {row.currentPeriodStart
+        ? new Date(row.currentPeriodStart).toISOString().split('T')[0]
+        : row.plan === 'free' ? 'Free Plan' : 'Not activated'}
+    </span>
+  ),
+},
+{
+  key: 'expiryDate', header: 'Expiry Date',
+  render: (row) => (
+    <span className="text-sm text-textGray">
+      {row.currentPeriodEnd
+        ? new Date(row.currentPeriodEnd).toISOString().split('T')[0]
+        : row.plan === 'free' ? 'No expiry' : 'Not activated'}
+    </span>
+  ),
+},
+{
+  key: 'daysRemaining', header: 'Days Remaining',
+  render: (row) => {
+    if (row.plan === 'free') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
-          <span className={`w-2 h-2 rounded-full shrink-0 ${dotColors[row.status] ?? 'bg-gray-400'}`} />
-          {days} days left
+          <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
+          Free Plan
         </span>
       );
-    },
+    }
+    if (!row.currentPeriodEnd) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
+          <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
+          Pending
+        </span>
+      );
+    }
+    const days = daysRemaining(row.currentPeriodEnd);
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
+        <span className={`w-2 h-2 rounded-full shrink-0 ${dotColors[row.status] ?? 'bg-gray-400'}`} />
+        {days} days left
+      </span>
+    );
   },
+},
 ];
 
 export default function UserSubscriptions() {

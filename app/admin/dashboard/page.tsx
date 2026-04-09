@@ -5,22 +5,38 @@ import { Briefcase, DollarSign, Users } from 'lucide-react';
 import EcosystemPulseStatCard    from '@/components/admin/dashboard/DashboardAnalytics/StatCard';
 import EcosystemPulseTrendsGraph from '@/components/admin/dashboard/DashboardAnalytics/TrendsGraph';
 import EcosystemPulseTasksChart  from '@/components/admin/dashboard/DashboardAnalytics/Chart';
-import { useDashboardStats, useUserChart } from '@/hooks/UseAdminDashboard';
+import { useDashboardStats, useUserChart, useCategoryChart } from '@/hooks/UseAdminDashboard';
 
-const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+const fmt      = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 const fmtMoney = (n: number) => `$${(n / 100).toLocaleString()}`;
 
-export default function DashboardPage() {
-  const [period, setPeriod] = useState('30d');
+const CATEGORY_COLORS: Record<string, string> = {
+  errands:     '#E84E3A',
+  tech:        '#1A3A4A',
+  design:      '#F97316',
+  moving:      '#F5C842',
+  'pet-care':  '#2CB5A0',
+  translation: '#8B5CF6',
+};
 
-  const { data: statsData, isLoading: statsLoading } = useDashboardStats();
-  const { data: chartData }                          = useUserChart(period);
+export default function DashboardPage() {
+  const [period] = useState('30d');
+
+  const { data: statsData,    isLoading: statsLoading } = useDashboardStats();
+  const { data: chartData }                             = useUserChart(period);
+  const { data: categoryData }                          = useCategoryChart();
 
   const stats = statsData?.data;
 
   const userGrowthData = (chartData?.data ?? []).map((p) => ({
-    month: p.date,
+    month:   p.date,
     current: p.count,
+  }));
+
+  const categoryChartData = (categoryData?.data ?? []).map((p) => ({
+    name:  p.category.charAt(0).toUpperCase() + p.category.slice(1),
+    value: p.count,
+    color: CATEGORY_COLORS[p.category] ?? '#6B7280',
   }));
 
   return (
@@ -69,7 +85,10 @@ export default function DashboardPage() {
           trendLabel=""
           periodLabel=""
         />
-        <EcosystemPulseTasksChart title="Tasks by Category" />
+        <EcosystemPulseTasksChart
+          title="Tasks by Category"
+          data={categoryChartData.length > 0 ? categoryChartData : undefined}
+        />
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ const statusStyles: Record<TaskStatus, string> = {
   Expired: 'bg-gray-100 text-gray-500',
   Removed: 'bg-red-100 text-red-600',
 };
-
 export default function AllTaskStatusBadge({ status }: AllTaskStatusBadgeProps) {
   return (
     <span

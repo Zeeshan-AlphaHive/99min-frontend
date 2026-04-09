@@ -9,6 +9,7 @@ export type DashboardStats = {
 
 export type ChartPoint  = { date: string; count: number };
 export type RevenuePoint = { month: string; revenue: number };
+export type CategoryPoint = { category: string; count: number };
 
 type R<T> = { success: boolean; data: T };
 
@@ -23,3 +24,7 @@ export const fetchTaskChart = (period = '30d') =>
 
 export const fetchRevenueChart = (period = '12m') =>
   request<R<RevenuePoint[]>>(`/api/admin/dashboard/charts/revenue?period=${period}`);
+
+
+export const fetchCategoryChart = () =>
+  request<R<CategoryPoint[]>>('/api/admin/dashboard/charts/categories');
