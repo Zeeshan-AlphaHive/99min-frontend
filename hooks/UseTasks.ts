@@ -105,7 +105,8 @@ export function useCreateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateTaskPayload) => createTask(payload),
+    mutationFn: (args: { payload: CreateTaskPayload; idempotencyKey?: string }) =>
+      createTask(args.payload, { idempotencyKey: args.idempotencyKey }),
     onSuccess: () => {
       // Refresh all task list queries so the new task appears immediately
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });

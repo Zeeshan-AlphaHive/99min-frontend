@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { CalendarDays, Clock, X } from 'lucide-react';
+import { CalendarDays, Clock, Eye, X } from 'lucide-react';
 import StatCard     from '@/components/admin/dashboard/Shared/StatsCard';
 import TableToolbar from '@/components/admin/dashboard/Shared/TableToolbar';
 import DataTable, { ColumnDef } from '@/components/admin/dashboard/Shared/DataTable';
@@ -35,7 +35,86 @@ const daysRemaining = (end: string) => {
   return Math.max(0, Math.ceil(diff / 86400000));
 };
 
-const columns: ColumnDef<AdminSubscription>[] = [
+function SubscriptionDetailsModal({
+  row,
+  onClose,
+}: {
+  row: AdminSubscription | null;
+  onClose: () => void;
+}) {
+  if (!row) return null;
+
+  const name = row.userId?.name || '—';
+  const email = row.userId?.email || '—';
+  const plan = row.plan;
+  const status = row.status;
+  const start = row.currentPeriodStart
+    ? new Date(row.currentPeriodStart).toISOString().split('T')[0]
+    : row.plan === 'free' ? 'Free Plan' : 'Not activated';
+  const end = row.currentPeriodEnd
+    ? new Date(row.currentPeriodEnd).toISOString().split('T')[0]
+    : row.plan === 'free' ? 'No expiry' : 'Not activated';
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+        aria-label="Close"
+      />
+      <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-xl border border-gray-200 p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-base font-semibold text-textBlack truncate">{name}</div>
+            <div className="text-sm text-textGray truncate">{email}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-50 border border-gray-200"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4 text-textGray" />
+          </button>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Plan</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">
+              {plan.charAt(0).toUpperCase() + plan.slice(1)}
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Status</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Start date</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">{start}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Expiry date</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">{end}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 sm:col-span-2">
+            <div className="text-xs text-textGray">Days remaining</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">
+              {row.plan === 'free' ? 'Free Plan' : row.currentPeriodEnd ? `${daysRemaining(row.currentPeriodEnd)} days left` : 'Pending'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const buildColumns = (
+  onView: (row: AdminSubscription) => void
+): ColumnDef<AdminSubscription>[] => [
   {
     key: 'user', header: 'User', width: '20%',
     render: (row) => {
@@ -71,12 +150,6 @@ const columns: ColumnDef<AdminSubscription>[] = [
     },
   },
   {
-    key: 'email', header: 'Email',
-    render: (row) => (
-      <span className="text-sm text-textGray">{row.userId?.email || '—'}</span>
-    ),
-  },
-  {
     key: 'plan', header: 'Plan Type',
     render: (row) => (
       <span className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ${planStyles[row.plan]}`}>
@@ -93,53 +166,50 @@ const columns: ColumnDef<AdminSubscription>[] = [
     ),
   },
   {
-  key: 'startDate', header: 'Start Date',
-  render: (row) => (
-    <span className="text-sm text-textGray">
-      {row.currentPeriodStart
-        ? new Date(row.currentPeriodStart).toISOString().split('T')[0]
-        : row.plan === 'free' ? 'Free Plan' : 'Not activated'}
-    </span>
-  ),
-},
-{
-  key: 'expiryDate', header: 'Expiry Date',
-  render: (row) => (
-    <span className="text-sm text-textGray">
-      {row.currentPeriodEnd
-        ? new Date(row.currentPeriodEnd).toISOString().split('T')[0]
-        : row.plan === 'free' ? 'No expiry' : 'Not activated'}
-    </span>
-  ),
-},
-{
-  key: 'daysRemaining', header: 'Days Remaining',
-  render: (row) => {
-    if (row.plan === 'free') {
+    key: 'daysRemaining',
+    header: 'Remaining',
+    render: (row) => {
+      if (row.plan === 'free') {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
+            <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
+            Free Plan
+          </span>
+        );
+      }
+      if (!row.currentPeriodEnd) {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
+            <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
+            Pending
+          </span>
+        );
+      }
+      const days = daysRemaining(row.currentPeriodEnd);
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
-          <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
-          Free Plan
+          <span className={`w-2 h-2 rounded-full shrink-0 ${dotColors[row.status] ?? 'bg-gray-400'}`} />
+          {days} days left
         </span>
       );
-    }
-    if (!row.currentPeriodEnd) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
-          <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
-          Pending
-        </span>
-      );
-    }
-    const days = daysRemaining(row.currentPeriodEnd);
-    return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-textGray">
-        <span className={`w-2 h-2 rounded-full shrink-0 ${dotColors[row.status] ?? 'bg-gray-400'}`} />
-        {days} days left
-      </span>
-    );
+    },
   },
-},
+  {
+    key: 'view',
+    header: 'View',
+    render: (row) => (
+      <div className="flex justify-end">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+          onClick={() => onView(row)}
+          title="View details"
+        >
+          <Eye className="w-4 h-4 text-textGray" />
+        </button>
+      </div>
+    ),
+  },
 ];
 
 export default function UserSubscriptions() {
@@ -147,6 +217,7 @@ export default function UserSubscriptions() {
   const [planFilter,   setPlanFilter]   = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page,         setPage]         = useState(1);
+  const [selected, setSelected] = useState<AdminSubscription | null>(null);
 
   const { data, isLoading } = useAdminSubscriptions({
     page,
@@ -224,7 +295,7 @@ export default function UserSubscriptions() {
 
       {/* Table */}
       <DataTable
-        columns={columns}
+        columns={buildColumns((row) => setSelected(row))}
         rows={data?.data.items ?? []}
         getRowKey={(r) => r._id}
         totalResults={data?.data.pagination.totalItems}
@@ -232,6 +303,8 @@ export default function UserSubscriptions() {
         totalPages={data?.data.pagination.totalPages ?? 1}
         onPageChange={setPage}
       />
+
+      <SubscriptionDetailsModal row={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }

@@ -84,7 +84,12 @@ const CreateTaskPage: React.FC = () => {
     if (isEditMode) {
       await update(payload);
     } else {
-      await create({ ...payload, media: mediaUrls });
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      await create({ payload: { ...payload, media: mediaUrls }, idempotencyKey });
     }
   };
 

@@ -99,10 +99,14 @@ export function fetchTaskById(taskId: string): Promise<ApiTaskResponse> {
 /**
  * POST /api/tasks  (auth required)
  */
-export function createTask(payload: CreateTaskPayload): Promise<ApiTaskResponse> {
+export function createTask(
+  payload: CreateTaskPayload,
+  options?: { idempotencyKey?: string }
+): Promise<ApiTaskResponse> {
   return request("/api/tasks", {
     method: "POST",
     body: JSON.stringify(payload),
+    headers: options?.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : undefined,
   }) as Promise<ApiTaskResponse>;
 }
 

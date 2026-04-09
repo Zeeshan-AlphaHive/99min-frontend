@@ -10,9 +10,11 @@ import { formatDistanceToNow } from 'date-fns';
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const load = async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await fetchAdminNotifications({ page: 1, limit: 50 });
       setNotifications(
@@ -25,6 +27,8 @@ export default function NotificationsPage() {
           read: n.read,
         }))
       );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load notifications");
     } finally {
       setLoading(false);
     }
@@ -32,6 +36,13 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     load().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      load().catch(() => {});
+    }, 10000);
+    return () => window.clearInterval(id);
   }, []);
 
   const markAllRead = () => {
@@ -71,6 +82,7 @@ export default function NotificationsPage() {
   </div>
 
   {/* Notification list */}
+  {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
   <div className="space-y-2">
     {notifications.map((notification) => (
       <button

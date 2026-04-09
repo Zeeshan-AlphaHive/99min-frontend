@@ -33,6 +33,15 @@ export default function EcosystemPulseTrendsGraph({
   trendLabel = '5.2%',
   periodLabel = 'January - June 2024',
 }: EcosystemPulseTrendsGraphProps) {
+  const max = Math.max(0, ...(data ?? []).map((d) => Number(d.current) || 0));
+  const yMax = max <= 5 ? 10 : Math.ceil(max * 1.2);
+
+  const formatTick = (v: number) => {
+    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}m`;
+    if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
+    return String(v);
+  };
+
   return (
     <div className="lg:col-span-2 border border-gray-200 rounded-xl p-6 bg-white shadow-sm flex flex-col">
       {/* Header */}
@@ -61,13 +70,14 @@ export default function EcosystemPulseTrendsGraph({
               tickLine={false}
               tick={{ fontSize: 12, fill: '#9CA3AF' }}
               dy={10}
+              tickFormatter={(v) => (typeof v === 'string' ? v.slice(5) : String(v))}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: '#9CA3AF' }}
-              ticks={[0, 25000, 50000, 75000, 100000]}
-              tickFormatter={(v) => (v === 0 ? '0' : `${v / 1000}k`)}
+              domain={[0, yMax]}
+              tickFormatter={formatTick}
             />
             <Tooltip
               contentStyle={{

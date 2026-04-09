@@ -52,7 +52,7 @@ const profileSchema = z.object({
     .string()
     .trim()
     .optional()
-    .refine((val) => !val || /^[0-9+\-\s]+$/.test(val), {
+    .refine((val) => !val || /^[0-9+()\\-\\s]+$/.test(val), {
       message: "Invalid phone number",
     }),
 
@@ -81,6 +81,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<ProfileFormValues>({
     defaultValues,
@@ -169,8 +170,16 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           {tr("Phone")}
         </label>
         <input
-          {...register("phone")}
+          {...register("phone", {
+            onChange: (e) => {
+              const raw = String(e.target.value ?? "");
+              // Allow digits, spaces, +, (), and hyphen; strip letters immediately.
+              const sanitized = raw.replace(/[^0-9+()\\-\\s]/g, "");
+              setValue("phone", sanitized, { shouldDirty: true, shouldValidate: true });
+            },
+          })}
           type="tel"
+          inputMode="tel"
           placeholder={tr("+1 234 567 8900")}
           className={`w-full px-4 py-3 rounded-xl bg-inputBg border ${
             errors.phone ? "border-red-500" : "border-transparent"

@@ -32,8 +32,10 @@ export interface FormData {
 interface FormErrors {
   title?: string;
   description?: string;
+  category?: string;
   budget?: string;
   location?: string;
+  duration?: string;
   media?: string;
 }
 
@@ -102,6 +104,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   const { tr } = useI18n();
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ─── Validation state ─────────────────────────────────────────────────────────
   const [errors, setErrors]   = useState<FormErrors>({});
@@ -119,45 +122,81 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     ...defaultFormData,
     ...initialData,
   });
-// ─── Validation Regex ─────────────────────────────────────────────
-const TEXT_ONLY_REGEX = /^[A-Za-z\s]+$/;
-const TEXT_WITH_PUNCTUATION_REGEX = /^[A-Za-z\s.,!?'-]+$/;
-const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
+// ─── Validation helpers ───────────────────────────────────────────────────────
+const TITLE_REGEX = /^[A-Za-z0-9\s.,!?'"()\-/:&]+$/;
+const LOCATION_REGEX = /^[A-Za-z0-9\s.,#'"\-]+$/;
+const DESCRIPTION_REGEX = /^[\s\S]*$/; // allow any characters; enforce length only
+
+type ParsedBudget = { min: number; max: number };
+const parseBudget = (raw: string): ParsedBudget | null => {
+  const s = raw.trim().replace(/\s+/g, "");
+  if (!s) return null;
+
+  // Allow: "25", "25.5", "25-50", "25.5-50", "25-50.25"
+  const parts = s.split("-");
+  if (parts.length > 2) return null;
+
+  const a = Number(parts[0]);
+  const b = parts.length === 2 ? Number(parts[1]) : a;
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+
+  // Support up to 2 decimals
+  const hasTooManyDecimals = (nStr: string) => {
+    const [, dec] = nStr.split(".");
+    return dec ? dec.length > 2 : false;
+  };
+  if (hasTooManyDecimals(parts[0]) || (parts[1] && hasTooManyDecimals(parts[1]))) return null;
+
+  return { min: a, max: b };
+};
   // ─── Per-field validation rules ───────────────────────────────────────────────
  const validateField = (field: keyof FormErrors, value: string): string => {
   switch (field) {
     case 'title':
       if (!value.trim()) return tr('Task title is required.');
-      if (!TEXT_ONLY_REGEX.test(value.trim()))
-        return tr('Title can only contain letters and spaces.');
       if (value.trim().length < 5)
         return tr('Title must be at least 5 characters.');
       if (value.trim().length > 100)
         return tr('Title must not exceed 100 characters.');
+      if (!TITLE_REGEX.test(value.trim()))
+        return tr('Title contains invalid characters.');
       return '';
 
     case 'description':
       if (!value.trim()) return tr('Description is required.');
-      if (!TEXT_WITH_PUNCTUATION_REGEX.test(value.trim()))
-        return tr('Description contains invalid characters.');
       if (value.trim().length < 20)
         return tr('Description must be at least 20 characters.');
       if (value.trim().length > 1000)
         return tr('Description must not exceed 1000 characters.');
+      if (!DESCRIPTION_REGEX.test(value)) return tr('Description is invalid.');
       return '';
 
     case 'location':
       if (!value.trim()) return tr('Location is required.');
-      if (!TEXT_ONLY_REGEX.test(value.trim()))
-        return tr('Location can only contain letters and spaces.');
       if (value.trim().length < 3)
         return tr('Location must be at least 3 characters.');
+      if (value.trim().length > 120)
+        return tr('Location must not exceed 120 characters.');
+      if (!LOCATION_REGEX.test(value.trim()))
+        return tr('Location contains invalid characters.');
+      return '';
+
+    case 'category':
+      if (!value.trim()) return tr('Category is required.');
       return '';
 
     case 'budget':
       if (!value.trim()) return tr('Budget is required.');
-      if (!BUDGET_REGEX.test(value.trim()))
-        return tr('Only numbers allowed (e.g. 25 or 25-50).');
+      const parsed = parseBudget(value);
+      if (!parsed) return tr('Enter a valid budget (e.g. 25 or 25-50).');
+      if (parsed.min <= 0 || parsed.max <= 0) return tr('Budget must be greater than 0.');
+      if (parsed.max < parsed.min) return tr('Budget range must be like min-max (max ≥ min).');
+      if (parsed.max > 100000) return tr('Budget seems too high.');
+      return '';
+
+    case 'duration':
+      if (!value.trim()) return tr('Duration is required.');
+      if (value !== '90_mins' && value !== '24_hours') return tr('Invalid duration.');
       return '';
 
     default:
@@ -167,7 +206,7 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
 
   // ─── Validate entire form, return errors map ──────────────────────────────────
   const validateAll = (): FormErrors => {
-    const fields: (keyof FormErrors)[] = ['title', 'description', 'budget', 'location'];
+    const fields: (keyof FormErrors)[] = ['title', 'description', 'category', 'budget', 'location', 'duration'];
     const newErrors: FormErrors = {};
     fields.forEach((f) => {
       const err = validateField(f, formData[f as keyof FormData] as string);
@@ -181,19 +220,8 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
   // ─── onChange: update value + re-validate if already touched ──────────────────
   const handleChange = (field: keyof FormData, value: string) => {
   let updatedValue = value;
-
-  // 🔒 Restrict input while typing
-  if (field === 'title' || field === 'location') {
-    updatedValue = value.replace(/[^A-Za-z\s]/g, '');
-  }
-
-  if (field === 'description') {
-    updatedValue = value.replace(/[^A-Za-z\s.,!?'-]/g, '');
-  }
-
-  if (field === 'budget') {
-    updatedValue = value.replace(/[^0-9.\-]/g, '');
-  }
+  // Keep budget input sane while typing (allow digits, dot, dash, spaces)
+  if (field === 'budget') updatedValue = value.replace(/[^0-9.\-\s]/g, '');
 
   setFormData((prev) => ({ ...prev, [field]: updatedValue }));
 
@@ -280,18 +308,21 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
     e.preventDefault();
     setSubmitError('');
 
+    if (isSubmitting) return;
+
     if (submitDisabled) {
       setSubmitError(submitDisabledMessage || tr("Your account is restricted. You can't post an ad right now."));
       return;
     }
 
     // Touch every required field so errors surface
-    setTouched({ title: true, description: true, budget: true, location: true });
+    setTouched({ title: true, description: true, category: true, budget: true, location: true, duration: true });
     const newErrors = validateAll();
     setErrors(newErrors);
     if (Object.values(newErrors).some(Boolean)) return;
 
     try {
+      setIsSubmitting(true);
       if (onSubmit) {
         await onSubmit(formData, files);
       } else {
@@ -302,6 +333,8 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
       setSubmitError(
         error instanceof Error ? error.message : tr('Failed to post task. Please try again.')
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -351,6 +384,30 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
         <p className="text-xs text-gray-400 text-right mt-0.5">
           {formData.description.length} / 1000
         </p>
+      </div>
+
+      {/* ── Category ── */}
+      <div className="mb-4">
+        <label className="block text-sm font-bold text-gray-900 mb-1">
+          {tr('Category')} <span className="text-red-500">*</span>
+        </label>
+        <Select
+          value={formData.category}
+          onValueChange={(value) => handleChange('category', value)}
+        >
+          <SelectTrigger className={`relative h-12 w-full rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary ${inputClass('category')}`}>
+            <SelectValue placeholder={tr('Select category')} />
+          </SelectTrigger>
+          <SelectContent className="w-full">
+            <SelectItem value="errands">{tr('Errands')}</SelectItem>
+            <SelectItem value="tech">{tr('Tech')}</SelectItem>
+            <SelectItem value="design">{tr('Design')}</SelectItem>
+            <SelectItem value="moving">{tr('Moving')}</SelectItem>
+            <SelectItem value="pet-care">{tr('Pet Care')}</SelectItem>
+            <SelectItem value="translation">{tr('Translation')}</SelectItem>
+          </SelectContent>
+        </Select>
+        <FieldError message={touched.category ? errors.category : undefined} />
       </div>
 
       {/* ── Budget ── */}
@@ -410,7 +467,7 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
             value={formData.duration}
             onValueChange={(value) => handleChange('duration', value as FormData['duration'])}
           >
-            <SelectTrigger className="relative h-12 w-full pl-10 pr-4 rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary">
+            <SelectTrigger className={`relative h-12 w-full pl-10 pr-4 rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary ${inputClass('duration')}`}>
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <Clock className="w-5 h-5 text-gray-600" />
               </span>
@@ -421,6 +478,7 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
               <SelectItem value="24_hours">{tr('24 Hours')}</SelectItem>
             </SelectContent>
           </Select>
+          <FieldError message={touched.duration ? errors.duration : undefined} />
         </div>
       </div>
 
@@ -529,10 +587,18 @@ const BUDGET_REGEX = /^\d+(\.\d{1,2})?(-\d+(\.\d{1,2})?)?$/;
       {/* ── Submit ── */}
       <div className="bg-white border-t border-gray-200 p-4 z-30">
         <div className="max-w-7xl mx-auto">
-          <Button type="submit" variant="primary" size="lg" fullWidth disabled={!isDirty || submitDisabled}>
-            {isEditMode
-              ? tr('Update Ad')
-              : tr(`Post Ad (Expires in ${formData.duration === '90_mins' ? '90 mins' : '24 hours'})`)}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={!isDirty || submitDisabled || isSubmitting}
+          >
+            {isSubmitting
+              ? (isEditMode ? tr("Updating…") : tr("Posting…"))
+              : isEditMode
+                ? tr("Update Ad")
+                : tr(`Post Ad (Expires in ${formData.duration === '90_mins' ? '90 mins' : '24 hours'})`)}
           </Button>
         </div>
       </div>

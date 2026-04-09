@@ -37,8 +37,8 @@ export default function DataTable<T>({
     </div>
   )}
 
-  <div className="overflow-x-auto">
-    <table className="w-full text-left border-collapse min-w-[600px]">
+  <div className="overflow-x-hidden">
+    <table className="w-full text-left border-collapse">
       <thead>
         <tr className="border-b border-gray-100">
           {columns.map((col) => (

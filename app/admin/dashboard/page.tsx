@@ -19,6 +19,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   translation: '#8B5CF6',
 };
 
+const toYmd = (d: Date) => {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 export default function DashboardPage() {
   const [period] = useState('30d');
 
@@ -28,10 +35,29 @@ export default function DashboardPage() {
 
   const stats = statsData?.data;
 
-  const userGrowthData = (chartData?.data ?? []).map((p) => ({
-    month:   p.date,
-    current: p.count,
-  }));
+  // Backend returns "new users per day" (sparse). For a proper "growth" chart,
+  // we render a continuous daily series with a cumulative line.
+  const userGrowthData = (() => {
+    const raw = chartData?.data ?? [];
+    const map = new Map<string, number>(raw.map((p) => [p.date, p.count]));
+
+    const days = period === '7d' ? 7 : period === '90d' ? 90 : period === '12m' ? 30 : 30;
+    const end = new Date();
+    end.setHours(0, 0, 0, 0);
+    const start = new Date(end);
+    start.setDate(end.getDate() - (days - 1));
+
+    const points: { month: string; current: number }[] = [];
+    let cumulative = 0;
+    for (let i = 0; i < days; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = toYmd(d);
+      cumulative += map.get(key) ?? 0;
+      points.push({ month: key, current: cumulative });
+    }
+    return points;
+  })();
 
   const categoryChartData = (categoryData?.data ?? []).map((p) => ({
     name:  p.category.charAt(0).toUpperCase() + p.category.slice(1),

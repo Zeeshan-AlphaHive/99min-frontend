@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { MoreHorizontal } from 'lucide-react';
+import { Eye, MoreHorizontal, X } from 'lucide-react';
 import type { UserManagementRow } from './types';
 import UserManagementPlanBadge from './UserPlanBadge';
 import UserManagementStatusBadge from './UserStatusBadge';
@@ -14,6 +14,74 @@ type UserManagementTableProps = {
   onPageChange?: (page: number) => void;
   onAction?: (userId: string, action: 'active' | 'suspend') => void;
 };
+
+function UserDetailsModal({
+  user,
+  onClose,
+}: {
+  user: UserManagementRow | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!user) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [user, onClose]);
+
+  if (!user) return null;
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+        aria-label="Close"
+      />
+      <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-xl border border-gray-200 p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <UserAvatar src={user.avatar} name={user.name} />
+            <div className="min-w-0">
+              <div className="text-base font-semibold text-textBlack truncate">{user.name}</div>
+              <div className="text-sm text-textGray truncate">{user.email}</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-50 border border-gray-200"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4 text-textGray" />
+          </button>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Plan</div>
+            <div className="mt-1"><UserManagementPlanBadge plan={user.plan} /></div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Status</div>
+            <div className="mt-1"><UserManagementStatusBadge status={user.status} /></div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Tasks posted</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">{user.tasksPosted}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div className="text-xs text-textGray">Join date</div>
+            <div className="mt-1 text-sm font-medium text-textBlack">{user.joinDate}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function UserAvatar({ src, name }: { src: string; name: string }) {
   const [errored, setErrored] = useState(false);
@@ -99,24 +167,25 @@ export default function UserManagementTable({
   onPageChange,
   onAction,
 }: UserManagementTableProps) {
+  const [selectedUser, setSelectedUser] = useState<UserManagementRow | null>(null);
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[700px]">
+      <div className="overflow-x-hidden">
+        <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="py-3.5 px-6 text-xs font-medium text-textGray w-[32%]">User</th>
-              <th className="py-3.5 px-6 text-xs font-medium text-textGray">Plan</th>
-              <th className="py-3.5 px-6 text-xs font-medium text-textGray">Tasks Posted</th>
-              <th className="py-3.5 px-6 text-xs font-medium text-textGray">Status</th>
-              <th className="py-3.5 px-6 text-xs font-medium text-textGray">Join Date</th>
-              <th className="py-3.5 px-6 text-xs font-medium text-textGray">Actions</th>
+              <th className="py-3.5 px-4 sm:px-6 text-xs font-medium text-textGray w-[48%]">User</th>
+              <th className="py-3.5 px-4 sm:px-6 text-xs font-medium text-textGray">Plan</th>
+              <th className="py-3.5 px-4 sm:px-6 text-xs font-medium text-textGray">Status</th>
+              <th className="py-3.5 px-4 sm:px-6 text-xs font-medium text-textGray text-right">View</th>
+              <th className="py-3.5 px-4 sm:px-6 text-xs font-medium text-textGray text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-4 px-6">
+                <td className="py-4 px-4 sm:px-6">
                   <div className="flex items-center gap-3">
                     <UserAvatar src={user.avatar} name={user.name} />
                     <div className="min-w-0">
@@ -125,11 +194,19 @@ export default function UserManagementTable({
                     </div>
                   </div>
                 </td>
-                <td className="py-4 px-6"><UserManagementPlanBadge plan={user.plan} /></td>
-                <td className="py-4 px-6 text-sm text-textBlack font-medium">{user.tasksPosted}</td>
-                <td className="py-4 px-6"><UserManagementStatusBadge status={user.status} /></td>
-                <td className="py-4 px-6 text-sm text-textGray">{user.joinDate}</td>
-                <td className="py-4 px-6">
+                <td className="py-4 px-4 sm:px-6"><UserManagementPlanBadge plan={user.plan} /></td>
+                <td className="py-4 px-4 sm:px-6"><UserManagementStatusBadge status={user.status} /></td>
+                <td className="py-4 px-4 sm:px-6 text-right">
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                    onClick={() => setSelectedUser(user)}
+                    title="View details"
+                  >
+                    <Eye className="w-4 h-4 text-textGray" />
+                  </button>
+                </td>
+                <td className="py-4 px-4 sm:px-6 text-right">
                   <ActionDropdown userId={user.id} onAction={onAction} />
                 </td>
               </tr>
@@ -144,6 +221,8 @@ export default function UserManagementTable({
         totalPages={totalPages}
         onPageChange={onPageChange}
       />
+
+      <UserDetailsModal user={selectedUser} onClose={() => setSelectedUser(null)} />
     </div>
   );
 }
