@@ -1,8 +1,8 @@
 export type UserPlan = 'Pro' | 'Business' | 'Free';
-export type UserStatus = 'Active' | 'Suspended';
+export type UserStatus = 'Active' | 'Suspended' | 'Removed';  // ← added 'Removed'
 
 export type UserManagementRow = {
-  id: number;
+  id: string;           // ← number → string (MongoDB _id)
   avatar: string;
   name: string;
   email: string;

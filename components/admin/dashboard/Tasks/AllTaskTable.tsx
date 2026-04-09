@@ -1,4 +1,5 @@
-import React from 'react';
+'use client';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 import type { TaskRow } from './types';
@@ -14,6 +15,33 @@ type AllTaskTableProps = {
   totalPages?: number;
   onPageChange?: (page: number) => void;
 };
+
+function TaskAvatar({ src, title }: { src: string; title: string }) {
+  const [errored, setErrored] = useState(false);
+
+  if (!src || errored) {
+    return (
+      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+        <span className="text-sm font-medium text-gray-500">
+          {title.charAt(0).toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200 shrink-0 relative">
+      <Image
+        src={src}
+        alt={title}
+        fill
+        sizes="36px"
+        className="object-cover"
+        onError={() => setErrored(true)}
+      />
+    </div>
+  );
+}
 
 export default function AllTaskTable({
   tasks,
@@ -41,9 +69,7 @@ export default function AllTaskTable({
               <tr key={task.id} className="hover:bg-gray-50 transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 shrink-0 relative">
-                      <Image src={task.avatar} alt={task.title} fill sizes="36px" className="object-cover" />
-                    </div>
+                    <TaskAvatar src={task.avatar} title={task.title} />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-textBlack truncate">{task.title}</p>
                       <p className="text-xs text-textGray truncate">{task.description}</p>

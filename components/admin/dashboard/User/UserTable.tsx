@@ -12,15 +12,42 @@ type UserManagementTableProps = {
   currentPage?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
-onAction?: (userId: string | number, action: 'active' | 'suspend') => void; 
+  onAction?: (userId: string, action: 'active' | 'suspend') => void;
 };
+
+function UserAvatar({ src, name }: { src: string; name: string }) {
+  const [errored, setErrored] = useState(false);
+
+  if (!src || errored) {
+    return (
+      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+        <span className="text-sm font-medium text-gray-500">
+          {name.charAt(0).toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200 shrink-0 relative">
+      <Image
+        src={src}
+        alt={name}
+        fill
+        sizes="36px"
+        className="object-cover"
+        onError={() => setErrored(true)}
+      />
+    </div>
+  );
+}
 
 function ActionDropdown({
   userId,
   onAction,
 }: {
-  userId: string | number;  // ← accept both
-  onAction?: (userId: string | number, action: 'active' | 'suspend') => void;
+  userId: string;
+  onAction?: (userId: string, action: 'active' | 'suspend') => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -91,9 +118,7 @@ export default function UserManagementTable({
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 shrink-0 relative">
-                      <Image src={user.avatar} alt={user.name} fill sizes="36px" className="object-cover" />
-                    </div>
+                    <UserAvatar src={user.avatar} name={user.name} />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-textBlack truncate">{user.name}</p>
                       <p className="text-xs text-textGray truncate">{user.email}</p>

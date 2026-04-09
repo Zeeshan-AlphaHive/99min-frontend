@@ -1,106 +1,60 @@
 'use client';
-
-import React from 'react';
+import React, { useState } from 'react';
 import AllTaskHeader from './AllTaskHeader';
 import AllTaskTable from './AllTaskTable';
-import type { TaskRow } from './types';
-
-const tasksData: TaskRow[] = [
-  {
-    id: 1,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Fix leaky faucet...',
-    description: 'Kitchen sink is asking...',
-    budget: '$50',
-    location: 'New York',
-    remaining: '45m',
-    interested: 12,
-    status: 'Active',
-  },
-  {
-    id: 2,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Deliver groceries...',
-    description: 'Need someone to pick up...',
-    budget: '$47',
-    location: 'Brooklyn',
-    remaining: '1h 20m',
-    interested: 8,
-    status: 'Active',
-  },
-  {
-    id: 3,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Clean 2BR apartme',
-    description: 'Deep clean needed...',
-    budget: '$55',
-    location: 'Queens',
-    remaining: 'Expired',
-    remainingExpired: true,
-    interested: 11,
-    status: 'Expired',
-  },
-  {
-    id: 4,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Setup WiFi router',
-    description: 'Help with mesh network...',
-    budget: '$66',
-    location: 'Manhattan',
-    remaining: '2h 10m',
-    interested: 55,
-    status: 'Active',
-  },
-  {
-    id: 5,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Deliver groceries...',
-    description: 'Need someone to pick up...',
-    budget: '$77',
-    location: 'New York',
-    remaining: '45m',
-    interested: 15,
-    status: 'Pending',
-  },
-  {
-    id: 6,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Deliver groceries...',
-    description: 'Need someone to pick up...',
-    budget: '$70',
-    location: 'Manhattan',
-    remaining: '2h 10m',
-    interested: 77,
-    status: 'Pending',
-  },
-  {
-    id: 7,
-    avatar: '/assets/images/Avatar.png',
-    title: 'Deliver groceries...',
-    description: 'Need someone to pick up...',
-    budget: '$90',
-    location: 'New York',
-    remaining: '45m',
-    interested: 11,
-    status: 'Pending',
-  },
-];
-
+import { useAdminTasks } from '@/hooks/UseAdminTasks';
+import type { TaskStatus } from './types';
 type TaskFilter = 'All Task' | 'Active' | 'Expired' | 'Removed';
 
-export default function AllTask() {
-  const [filter, setFilter] = React.useState<TaskFilter>('All Task');
+const filterToStatus = (f: TaskFilter) => ({
+  'Active': 'active', 'Expired': 'expired', 'Removed': 'removed'
+} as Record<string, string>)[f];
 
-  const filteredTasks = tasksData.filter((task) => {
-    if (filter === 'All Task') return true;
-    if (filter === 'Removed') return false;
-    return task.status === filter;
+const formatRemaining = (expiresAt: string) => {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return { label: 'Expired', expired: true };
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  return { label: hours > 0 ? `${hours}h ${mins % 60}m` : `${mins}m`, expired: false };
+};
+
+export default function AllTask() {
+  const [filter, setFilter] = useState<TaskFilter>('All Task');
+  const [page, setPage]     = useState(1);
+
+  const { data, isLoading, isError } = useAdminTasks({
+    page, limit: 20, status: filterToStatus(filter),
   });
+
+  const mappedTasks = (data?.data.items ?? []).map((t) => {
+    const { label, expired } = formatRemaining(t.expiresAt);
+    return {
+      id: t._id,
+     avatar: t.posterUserId?.avatar ?? '',
+      title: t.title,
+      description: t.description,
+      budget: `$${t.budget.min}–$${t.budget.max}`,
+      location: t.location.label,
+      remaining: label,
+      remainingExpired: expired,
+      interested: t.interestCount ?? 0,
+status: (t.status.charAt(0).toUpperCase() + t.status.slice(1)) as TaskStatus,
+    };
+  });
+
+  if (isLoading) return <div className="p-6 text-sm text-gray-500">Loading tasks...</div>;
+  if (isError)   return <div className="p-6 text-sm text-red-500">Failed to load tasks.</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <AllTaskHeader onFilterChange={setFilter} />
-      <AllTaskTable tasks={filteredTasks} />
+      <AllTaskHeader onFilterChange={(f) => { setFilter(f); setPage(1); }} />
+      <AllTaskTable
+        tasks={mappedTasks}
+        totalResults={data?.data.pagination.totalItems}
+        currentPage={data?.data.pagination.page ?? 1}
+        totalPages={data?.data.pagination.totalPages ?? 1}
+        onPageChange={setPage}
+      />
     </div>
   );
 }
