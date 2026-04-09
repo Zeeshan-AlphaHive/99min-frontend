@@ -27,7 +27,7 @@ const OtpModal: React.FC<OtpModalProps> = ({
 }) => {
   const { tr } = useI18n();
   const [apiError, setApiError] = useState("");
-  const [resendSeconds, setResendSeconds] = useState(60);
+  const [resendSeconds, setResendSeconds] = useState(10);
   const [canResend, setCanResend] = useState(false);
 
   const {

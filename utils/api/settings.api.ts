@@ -1,5 +1,22 @@
 import { request } from "@/utils/api/client";
 
+export type PublicAppSetting = {
+  defaultTaskDuration: number;
+  maxDurationPro: number;
+  dailyTaskLimitFree: number;
+  reportAutoFlagCount: number;
+  maintenanceMode: boolean;
+  pinnedExampleTask: {
+    title: string;
+    location: string;
+    description: string;
+    budget: number;
+  };
+};
+
+export function fetchPublicSettings() {
+  return request(`/api/settings`) as Promise<{ success: boolean; data: PublicAppSetting }>;
+}
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Profile {

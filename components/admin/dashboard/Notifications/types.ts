@@ -1,13 +1,13 @@
 export type NotificationType =
-  | 'task_expiring'
-  | 'new_interest'
-  | 'new_message'
-  | 'task_expired'
-  | 'report_alert';
+  | "user_joined"
+  | "task_created"
+  | "task_reported"
+  | "user_reported"
+  | "system";
 
 export type Notification = {
-  id: number;
-  type: NotificationType;
+  id: string;
+  type: NotificationType | string;
   title: string;
   description: string;
   time: string;

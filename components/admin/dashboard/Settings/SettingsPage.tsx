@@ -1,17 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SettingsSection from './SettingsSection';
 import SettingsField from './Settingsfield';
 // import SettingsToggle from './SettingsToggle';
+import { getAdminSettings, updateAdminSettings } from '@/utils/api/admin.settings.api';
 
 // const LANGUAGES = ['English', 'Spanish', 'French', 'German', 'Italian', 'Chinese', 'Portuguese'];
 
 export default function SettingsPage() {
   // General Settings
-  const [defaultDuration, setDefaultDuration] = useState('99');
-  const [maxDurationPro, setMaxDurationPro] = useState('180');
-  const [dailyTaskLimit, setDailyTaskLimit] = useState('4');
+  const [defaultDuration, setDefaultDuration] = useState('90');
+  const [maxDurationPro, setMaxDurationPro] = useState('1440');
+  const [dailyTaskLimit, setDailyTaskLimit] = useState('3');
+  const [reportAutoFlagCount, setReportAutoFlagCount] = useState('3');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>('');
 
   // Language Settings
 //   const [defaultLanguage] = useState('English (US)');
@@ -27,16 +32,63 @@ export default function SettingsPage() {
 //   const [maintenanceMode, setMaintenanceMode] = useState(true);
 
   // Pinned Example Task
-  const [taskTitle, setTaskTitle] = useState('Fix my leaky kitchen faucet');
-  const [taskLocation, setTaskLocation] = useState('Downtown, NY');
-  const [taskDescription, setTaskDescription] = useState(
-    'I need a plumber to fix a small leak under the kitchen sink. Should be a quick 30-minute job.'
-  );
-  const [taskBudget, setTaskBudget] = useState('45');
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskLocation, setTaskLocation] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [taskBudget, setTaskBudget] = useState('0');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await getAdminSettings();
+        if (cancelled) return;
+
+        setDefaultDuration(String(res.data.defaultTaskDuration ?? 90));
+        setMaxDurationPro(String(res.data.maxDurationPro ?? 1440));
+        setDailyTaskLimit(String(res.data.dailyTaskLimitFree ?? 3));
+        setReportAutoFlagCount(String(res.data.reportAutoFlagCount ?? 3));
+
+        setTaskTitle(res.data.pinnedExampleTask?.title ?? '');
+        setTaskLocation(res.data.pinnedExampleTask?.location ?? '');
+        setTaskDescription(res.data.pinnedExampleTask?.description ?? '');
+        setTaskBudget(String(res.data.pinnedExampleTask?.budget ?? 0));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load settings');
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSave = () => {
-    // Save logic here
-    alert('Settings saved!');
+    setError('');
+    (async () => {
+      try {
+        setSaving(true);
+        await updateAdminSettings({
+          defaultTaskDuration: Number(defaultDuration),
+          maxDurationPro: Number(maxDurationPro),
+          dailyTaskLimitFree: Number(dailyTaskLimit),
+          reportAutoFlagCount: Number(reportAutoFlagCount),
+          pinnedExampleTask: {
+            title: taskTitle,
+            location: taskLocation,
+            description: taskDescription,
+            budget: Number(taskBudget),
+          },
+        });
+        alert('Settings saved!');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to save settings');
+      } finally {
+        setSaving(false);
+      }
+    })();
   };
 
   return (
@@ -47,11 +99,16 @@ export default function SettingsPage() {
     <button
       type="button"
       onClick={handleSave}
+      disabled={loading || saving}
       className="px-3 sm:px-5 py-2 bg-orange hover:bg-orangeHover text-white text-xs sm:text-sm font-medium rounded-lg transition-colors shadow-sm"
     >
-      Save Changes
+      {saving ? 'Saving…' : 'Save Changes'}
     </button>
   </div>
+
+  {error && (
+    <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+  )}
 
       <div className="space-y-4">
 
@@ -73,6 +130,12 @@ export default function SettingsPage() {
             label="Daily Task Limit (Free Users)"
             value={dailyTaskLimit}
             onChange={setDailyTaskLimit}
+            type="number"
+          />
+          <SettingsField
+            label="Auto-Flag Count (Reports)"
+            value={reportAutoFlagCount}
+            onChange={setReportAutoFlagCount}
             type="number"
           />
         </SettingsSection>
