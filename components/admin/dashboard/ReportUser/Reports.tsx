@@ -7,9 +7,10 @@ import TableToolbar from '@/components/admin/dashboard/Shared/TableToolbar';
 import DataTable, { ColumnDef } from '@/components/admin/dashboard/Shared/DataTable';
 import ReportDetailsModal from './ReportsDetailModal';
 import BanUserModal from './BanUserModal';
-import { fetchTaskReports, type AdminTaskReport } from '@/utils/api/admin.reports.api';
+import { deleteTaskReport, fetchTaskReports, type AdminTaskReport } from '@/utils/api/admin.reports.api';
 import { formatDistanceToNow } from 'date-fns';
 import { createPortal } from 'react-dom';
+import ConfirmationModal from '@/components/shared/ConfirmationModal';
 
 type ReportedUserRow = {
   id: string; // reportId
@@ -18,6 +19,7 @@ type ReportedUserRow = {
   reporterName: string;
   reporterEmail: string;
   ownerName: string;
+  ownerStatus: string;
   reports: number; // kept for UI badge; currently 1 per row
   reason: string;
   latest: string;
@@ -28,9 +30,15 @@ type ReportedUserRow = {
 function RowActionMenu({
   onViewDetails,
   onBanUser,
+  onDeleteReport,
+  banDisabled,
+  banDisabledLabel,
 }: {
   onViewDetails: () => void;
   onBanUser: () => void;
+  onDeleteReport: () => void;
+  banDisabled: boolean;
+  banDisabledLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -98,11 +106,26 @@ function RowActionMenu({
                 type="button"
                 onClick={() => {
                   setOpen(false);
+                  onDeleteReport();
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-textBlack hover:bg-gray-50 transition-colors"
+              >
+                Delete report
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
                   onBanUser();
                 }}
-                className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                disabled={banDisabled}
+                className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                  banDisabled
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-red-500 hover:bg-red-50"
+                }`}
               >
-                Ban User
+                {banDisabledLabel || "Ban User"}
               </button>
             </div>,
             document.body
@@ -121,43 +144,49 @@ export default function ReportedUsers() {
   const [showDetails, setShowDetails] = useState(false);
   const [showBan, setShowBan] = useState(false);
   const [rows, setRows] = useState<ReportedUserRow[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<ReportedUserRow | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const loadReports = async () => {
+    const status =
+      statusFilter === 'all' ? 'all' : (statusFilter as 'pending' | 'resolved' | 'reviewing' | 'dismissed');
+    const res = await fetchTaskReports({ page, limit: 10, status, q: search || undefined });
+
+    const mapped: ReportedUserRow[] = res.data.map((r) => {
+      const statusLabel = r.status === 'resolved' ? 'Resolved' : 'Pending';
+      const latest = formatDistanceToNow(new Date(r.createdAt), { addSuffix: true });
+      return {
+        id: r._id,
+        report: r,
+        taskTitle: r.taskId?.title || 'Unknown task',
+        reporterName: r.reporterUserId?.name || 'Unknown',
+        reporterEmail: r.reporterUserId?.email || '',
+        ownerName: r.taskId?.posterUserId?.name || 'Unknown',
+        ownerStatus: r.taskId?.posterUserId?.status || 'unknown',
+        reports: 1,
+        reason: r.reason,
+        latest,
+        status: statusLabel,
+      };
+    });
+
+    setRows(mapped);
+  };
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const status =
-          statusFilter === 'all' ? 'all' : (statusFilter as 'pending' | 'resolved' | 'reviewing' | 'dismissed');
-        const res = await fetchTaskReports({ page, limit: 10, status, q: search || undefined });
-        if (cancelled) return;
-
-        const mapped: ReportedUserRow[] = res.data.map((r) => {
-          const statusLabel = r.status === 'resolved' ? 'Resolved' : 'Pending';
-          const latest = formatDistanceToNow(new Date(r.createdAt), { addSuffix: true });
-          return {
-            id: r._id,
-            report: r,
-            taskTitle: r.taskId?.title || 'Unknown task',
-            reporterName: r.reporterUserId?.name || 'Unknown',
-            reporterEmail: r.reporterUserId?.email || '',
-            ownerName: r.taskId?.posterUserId?.name || 'Unknown',
-            reports: 1,
-            reason: r.reason,
-            latest,
-            status: statusLabel,
-          };
-        });
-
-        setRows(mapped);
+        await loadReports();
       } catch (e) {
         console.error(e);
-        setRows([]);
+        if (!cancelled) setRows([]);
       }
     })();
-
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, statusFilter]);
 
   const filtered = useMemo(() => {
@@ -227,6 +256,16 @@ export default function ReportedUsers() {
         <RowActionMenu
           onViewDetails={() => { setSelectedRow(row); setShowDetails(true); }}
           onBanUser={() => { setSelectedRow(row); setShowBan(true); }}
+          onDeleteReport={() => {
+            setDeleteTarget(row);
+            setShowDeleteConfirm(true);
+          }}
+          banDisabled={
+            row.ownerStatus === "banned" ||
+            row.report.status === "resolved" ||
+            row.report.actionTaken === "banned"
+          }
+          banDisabledLabel={row.ownerStatus === "banned" ? "Already banned" : row.report.status === "resolved" ? "Resolved" : undefined}
         />
       ),
     },
@@ -293,6 +332,7 @@ export default function ReportedUsers() {
         onClose={() => setShowDetails(false)}
         onBanUser={() => { setShowDetails(false); setShowBan(true); }}
         report={selectedRow?.report ?? null}
+        onSuccess={loadReports}
       />
 
       {/* Ban User Modal */}
@@ -301,6 +341,25 @@ export default function ReportedUsers() {
         onClose={() => setShowBan(false)}
         userName={selectedRow?.report?.taskId?.posterUserId?.name ?? ''}
         userId={selectedRow?.report?.taskId?.posterUserId?._id ?? null}
+        reportId={selectedRow?.report?._id ?? null}
+        onSuccess={loadReports}
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteTarget(null);
+        }}
+        title="Delete report?"
+        description="This will permanently delete the report record. This does not automatically unban users or restore removed tasks."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await deleteTaskReport(deleteTarget.id);
+          await loadReports();
+        }}
       />
     </div>
   );

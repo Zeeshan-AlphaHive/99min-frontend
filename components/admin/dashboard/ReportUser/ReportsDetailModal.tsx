@@ -1,15 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import type { AdminTaskReport } from '@/utils/api/admin.reports.api';
 import { removeTask } from '@/utils/api/admin.moderation.api';
+import { getTaskReport, updateTaskReport } from '@/utils/api/admin.reports.api';
 
 type ReportDetailsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onBanUser: () => void;
   report: AdminTaskReport | null;
+  onSuccess?: () => void;
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -29,18 +31,60 @@ export default function ReportDetailsModal({
   onClose,
   onBanUser,
   report,
+  onSuccess,
 }: ReportDetailsModalProps) {
+  const [freshReport, setFreshReport] = useState<AdminTaskReport | null>(report);
+  const reportId = report?._id || null;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!isOpen) return;
+      if (!reportId) return;
+      try {
+        const res = await getTaskReport(reportId);
+        if (!cancelled) setFreshReport(res.data);
+      } catch {
+        // keep existing snapshot
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, reportId]);
+
+  // Keep snapshot in sync when opening a different report
+  useEffect(() => {
+    if (!isOpen) return;
+    setFreshReport(report);
+  }, [isOpen, reportId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!isOpen) return null;
 
-  const taskTitle = report?.taskId?.title || 'Unknown task';
-  const reporterName = report?.reporterUserId?.name || 'Unknown';
-  const reporterEmail = report?.reporterUserId?.email || '';
-  const reason = report?.reason || '—';
-  const details = report?.details?.trim() ? report.details : 'No additional details provided.';
-  const status = report?.status || 'pending';
-  const createdAt = report?.createdAt ? new Date(report.createdAt).toLocaleString() : '—';
-  const updatedAt = report?.updatedAt ? new Date(report.updatedAt).toLocaleString() : '—';
-  const taskId = report?.taskId?._id || null;
+  const r = freshReport;
+  const taskTitle = r?.taskId?.title || 'Unknown task';
+  const reporterName = r?.reporterUserId?.name || 'Unknown';
+  const reporterEmail = r?.reporterUserId?.email || '';
+  const reason = r?.reason || '—';
+  const details = r?.details?.trim() ? r.details : 'No additional details provided.';
+  const status = r?.status || 'pending';
+  const actionTaken = r?.actionTaken || "none";
+  const createdAt = r?.createdAt ? new Date(r.createdAt).toLocaleString() : '—';
+  const updatedAt = r?.updatedAt ? new Date(r.updatedAt).toLocaleString() : '—';
+  const taskId = r?.taskId?._id || null;
+  const ownerStatus = r?.taskId?.posterUserId?.status || "unknown";
+  const taskStatus = r?.taskId?.status || "unknown";
+  const banDisabled = ownerStatus === "banned" || status === "resolved" || actionTaken === "banned";
+  const removeDisabled = taskStatus === "removed" || status === "resolved" || actionTaken === "task_removed";
+  const canResolve = status !== "resolved" && !!r?._id;
+  const suggestedAction =
+    ownerStatus === "banned"
+      ? "banned"
+      : taskStatus === "removed"
+        ? "task_removed"
+        : actionTaken !== "none"
+          ? actionTaken
+          : "none";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -104,6 +148,53 @@ export default function ReportDetailsModal({
 
           <Divider />
 
+          {/* Outcome / moderation */}
+          <div className="mt-3">
+            <SectionLabel>Outcome</SectionLabel>
+            <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-textGray">Report status</p>
+                  <p className="text-sm font-medium text-textBlack">{status}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-textGray">Action taken</p>
+                  <p className="text-sm font-medium text-textBlack">{actionTaken}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div>
+                  <p className="text-xs text-textGray">User status</p>
+                  <p className="text-sm font-medium text-textBlack">{ownerStatus}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-textGray">Task status</p>
+                  <p className="text-sm font-medium text-textBlack">{taskStatus}</p>
+                </div>
+              </div>
+            </div>
+            {canResolve && suggestedAction !== "none" && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!r?._id) return;
+                  await updateTaskReport(r._id, {
+                    status: "resolved",
+                    actionTaken: suggestedAction,
+                    resolutionNote: `Auto-resolved (detected ${suggestedAction})`,
+                  });
+                  onSuccess?.();
+                  onClose();
+                }}
+                className="mt-3 w-full py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-textBlack hover:bg-gray-50 transition-colors"
+              >
+                Mark report as resolved
+              </button>
+            )}
+          </div>
+
+          <Divider />
+
           {/* Metadata */}
           <div className="mt-3">
             <SectionLabel>Metadata</SectionLabel>
@@ -136,18 +227,32 @@ export default function ReportDetailsModal({
             onClick={async () => {
               if (!taskId) return;
               await removeTask(taskId, { reason: "Removed due to report" });
+              if (r?._id) {
+                await updateTaskReport(r._id, {
+                  status: "resolved",
+                  actionTaken: "task_removed",
+                  resolutionNote: "Task removed by admin",
+                });
+              }
+              onSuccess?.();
               onClose();
             }}
-            className="sm:flex-1 py-2.5 bg-orange hover:opacity-90 rounded-xl text-sm font-medium text-white transition-colors"
+            disabled={removeDisabled || !taskId}
+            className={`sm:flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-colors ${
+              removeDisabled ? "bg-orange/40 cursor-not-allowed" : "bg-orange hover:opacity-90"
+            }`}
           >
-            Remove Task
+            {removeDisabled ? "Task removed" : "Remove Task"}
           </button>
           <button
             type="button"
             onClick={onBanUser}
-            className="sm:flex-1 py-2.5 bg-red-500 hover:bg-red-600 rounded-xl text-sm font-medium text-white transition-colors"
+            disabled={banDisabled}
+            className={`sm:flex-1 py-2.5 rounded-xl text-sm font-medium text-white transition-colors ${
+              banDisabled ? "bg-red-500/40 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"
+            }`}
           >
-            Ban User
+            {banDisabled ? "User banned" : "Ban User"}
           </button>
           </div>
         </div>

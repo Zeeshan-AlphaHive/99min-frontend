@@ -97,3 +97,30 @@ export function fetchTaskReports(params: {
   }>;
 }
 
+export function updateTaskReport(
+  reportId: string,
+  payload: Partial<{ status: AdminUserReportStatus; actionTaken: AdminTaskReportAction; resolutionNote: string }>
+): Promise<{ success: boolean; message?: string; data: AdminTaskReport }> {
+  return request(`/api/admin/reports/tasks/${reportId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  }) as Promise<{ success: boolean; message?: string; data: AdminTaskReport }>;
+}
+
+export function getTaskReport(
+  reportId: string
+): Promise<{ success: boolean; data: AdminTaskReport }> {
+  return request(`/api/admin/reports/tasks/${reportId}`) as Promise<{
+    success: boolean;
+    data: AdminTaskReport;
+  }>;
+}
+
+export function deleteTaskReport(
+  reportId: string
+): Promise<{ success: boolean; message?: string; data: { deleted: boolean; reportId: string } }> {
+  return request(`/api/admin/reports/tasks/${reportId}`, {
+    method: "DELETE",
+  }) as Promise<{ success: boolean; message?: string; data: { deleted: boolean; reportId: string } }>;
+}
+

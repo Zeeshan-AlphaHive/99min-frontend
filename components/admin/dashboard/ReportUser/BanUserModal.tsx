@@ -3,12 +3,15 @@
 import React, { useState } from 'react';
 import { ShieldAlert } from 'lucide-react';
 import { banUser } from '@/utils/api/admin.moderation.api';
+import { updateTaskReport } from '@/utils/api/admin.reports.api';
 
 type BanUserModalProps = {
   isOpen: boolean;
   onClose: () => void;
   userName: string;
   userId: string | null;
+  reportId: string | null;
+  onSuccess?: () => void;
 };
 
 const BAN_REASONS = [
@@ -20,7 +23,7 @@ const BAN_REASONS = [
   'Other',
 ];
 
-export default function BanUserModal({ isOpen, onClose, userName, userId }: BanUserModalProps) {
+export default function BanUserModal({ isOpen, onClose, userName, userId, reportId, onSuccess }: BanUserModalProps) {
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [confirmed, setConfirmed] = useState(false);
@@ -34,6 +37,14 @@ export default function BanUserModal({ isOpen, onClose, userName, userId }: BanU
     try {
       setSubmitting(true);
       await banUser(userId, { reason, notes });
+      if (reportId) {
+        await updateTaskReport(reportId, {
+          status: "resolved",
+          actionTaken: "banned",
+          resolutionNote: notes || reason,
+        });
+      }
+      onSuccess?.();
       onClose();
     } finally {
       setSubmitting(false);
