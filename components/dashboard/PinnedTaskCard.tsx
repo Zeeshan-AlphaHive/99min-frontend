@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MapPin, Clock, Share2, Tag } from 'lucide-react';
 import Image from 'next/image';
 import watermark from '@/public/assets/images/watermark.svg';
 import { useI18n } from '@/contexts/i18n-context';
+import { fetchPublicSettings } from '@/utils/api/settings.api';
 interface PinnedTaskCardProps {
   title?: string;
   description?: string;
@@ -14,15 +15,58 @@ interface PinnedTaskCardProps {
 }
 
 const PinnedTaskCard: React.FC<PinnedTaskCardProps> = ({
-  title = "Perfect Task Title: Clear and Specific",
-  description = "Write a detailed description that includes what you need, when you need it, and any special requirements. Be clear and friendly!",
-  price = "$25-50",
-  tags = ['example', 'tutorial', 'guide'],
-  location = "Your Location",
+  title,
+  description,
+  price,
+  tags,
+  location,
   timeLeft = "99m",
   onClick,
 }) => {
   const { tr } = useI18n();
+  const [loading, setLoading] = useState(false);
+  const [settingsTitle, setSettingsTitle] = useState<string>('');
+  const [settingsLocation, setSettingsLocation] = useState<string>('');
+  const [settingsDescription, setSettingsDescription] = useState<string>('');
+  const [settingsBudget, setSettingsBudget] = useState<number>(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetchPublicSettings();
+        if (cancelled) return;
+        setSettingsTitle(res.data.pinnedExampleTask?.title ?? '');
+        setSettingsLocation(res.data.pinnedExampleTask?.location ?? '');
+        setSettingsDescription(res.data.pinnedExampleTask?.description ?? '');
+        setSettingsBudget(res.data.pinnedExampleTask?.budget ?? 0);
+      } catch {
+        // keep defaults below if settings fetch fails
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const computedTitle =
+    title ?? settingsTitle ?? "Perfect Task Title: Clear and Specific";
+  const computedDescription =
+    description ?? settingsDescription ??
+    "Write a detailed description that includes what you need, when you need it, and any special requirements. Be clear and friendly!";
+  const computedLocation = location ?? settingsLocation ?? "Your Location";
+  const computedPrice = useMemo(() => {
+    if (price) return price;
+    if (Number.isFinite(settingsBudget) && settingsBudget > 0) return `$${settingsBudget}`;
+    return "$25-50";
+  }, [price, settingsBudget]);
+  const computedTags = useMemo(() => {
+    if (tags && tags.length) return tags;
+    return ['example', 'tutorial', 'guide'];
+  }, [tags]);
   return (
     <div 
       onClick={onClick}
@@ -45,19 +89,19 @@ const PinnedTaskCard: React.FC<PinnedTaskCardProps> = ({
       </div>
       
       <h3 className="text-2xl font-black text-textBlack mb-2 ">
-        {tr(title)}
+        {tr(computedTitle)}
       </h3>
       
       <p className="text-textGray text-sm mb-4 leading-relaxed">
-        {tr(description)}
+        {tr(computedDescription)}
       </p>
       
       <div className="text-3xl font-black text-orange mb-4">
-        {price}
+        {computedPrice}
       </div>
       
       <div className="flex flex-wrap gap-2 mb-6">
-        {tags.map((tag, index) => (
+        {computedTags.map((tag, index) => (
           <div 
             key={index} 
             className="flex items-center gap-1 bg-iconBg text-orange px-3 py-2 rounded-full text-sm font-medium"
@@ -71,7 +115,7 @@ const PinnedTaskCard: React.FC<PinnedTaskCardProps> = ({
       <div className="flex items-center justify-between text-textGray text-sm font-medium mb-6">
         <div className="flex items-center gap-1.5">
           <MapPin className="w-5 h-5 text-gray-400" />
-          {tr(location)}
+          {tr(computedLocation)}
         </div>
         <div className="flex items-center text-orange gap-1.5 bg-iconBg px-3 py-2 rounded-full ">
           <Clock className="w-5 h-5 text-orange" />

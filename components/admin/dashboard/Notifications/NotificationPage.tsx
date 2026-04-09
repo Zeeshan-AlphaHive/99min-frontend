@@ -1,74 +1,43 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import NotificationItem from './NotificationItem';
 import type { Notification } from './types';
-
-const initialNotifications: Notification[] = [
-  {
-    id: 1,
-    type: 'task_expiring',
-    title: 'Task Expiring Soon',
-    description: "Task 'Fix my laptop' expires in 15 minutes",
-    time: '2 min ago',
-    read: false,
-  },
-  {
-    id: 2,
-    type: 'new_interest',
-    title: 'New Interest',
-    description: '3 users showed interest in a task',
-    time: '2 min ago',
-    read: false,
-  },
-  {
-    id: 3,
-    type: 'report_alert',
-    title: 'Report Alert',
-    description: 'A user has been reported',
-    time: '2 min ago',
-    read: true,
-  },
-  {
-    id: 4,
-    type: 'task_expired',
-    title: 'Task Expired',
-    description: 'A task has expired',
-    time: '2 min ago',
-    read: true,
-  },
-  {
-    id: 5,
-    type: 'report_alert',
-    title: 'Report Alert',
-    description: 'A user has been reported',
-    time: '2 min ago',
-    read: true,
-  },
-  {
-    id: 6,
-    type: 'task_expired',
-    title: 'Task Expired',
-    description: 'A task has expired',
-    time: '2 min ago',
-    read: true,
-  },
-  {
-    id: 7,
-    type: 'report_alert',
-    title: 'Report Alert',
-    description: 'A user has been reported',
-    time: '2 min ago',
-    read: true,
-  },
-];
+import { fetchAdminNotifications, markAdminNotificationRead, markAllAdminNotificationsRead } from '@/utils/api/admin.notifications.api';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchAdminNotifications({ page: 1, limit: 50 });
+      setNotifications(
+        res.data.map((n) => ({
+          id: n._id,
+          type: n.type,
+          title: n.title,
+          description: n.body,
+          time: formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }),
+          read: n.read,
+        }))
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load().catch(console.error);
+  }, []);
 
   const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    markAllAdminNotificationsRead()
+      .then(() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))))
+      .catch(console.error);
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -82,11 +51,11 @@ export default function NotificationsPage() {
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => setNotifications(initialNotifications)}
+        onClick={() => load().catch(console.error)}
         className="p-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors shadow-sm"
         title="Refresh"
       >
-        <RefreshCw className="w-4 h-4 text-textGray" />
+        <RefreshCw className={`w-4 h-4 text-textGray ${loading ? "animate-spin" : ""}`} />
       </button>
 
       <button
@@ -104,7 +73,23 @@ export default function NotificationsPage() {
   {/* Notification list */}
   <div className="space-y-2">
     {notifications.map((notification) => (
-      <NotificationItem key={notification.id} notification={notification} />
+      <button
+        key={notification.id}
+        type="button"
+        className="w-full text-left"
+        onClick={() => {
+          if (notification.read) return;
+          markAdminNotificationRead(notification.id)
+            .then(() =>
+              setNotifications((prev) =>
+                prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+              )
+            )
+            .catch(console.error);
+        }}
+      >
+        <NotificationItem notification={notification} />
+      </button>
     ))}
   </div>
 </div>
