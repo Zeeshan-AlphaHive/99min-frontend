@@ -22,6 +22,7 @@ import { useBlockedUsers } from "@/hooks/UseBlockedUser";
 import { deleteConversation } from "@/utils/api/message.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "@/contexts/i18n-context";
+import { reportUser as reportUserApi } from "@/utils/api/user-reports.api";
 interface ChatInterfaceProps {
   conversation: ApiConversation;
   onBack: () => void;
@@ -318,7 +319,14 @@ const handleBlockUser = async () => {
       <ReportUserModal
         isOpen={isReportUserModalOpen}
         onClose={() => setIsReportUserModalOpen(false)}
-        onSubmit={(reason, details) => console.log("Report user:", { reason, details })}
+        onSubmit={async (reason, details) => {
+          try {
+            await reportUserApi(otherParticipant._id, { reason, details });
+          } catch (e) {
+            // Modal already closes; keep UX simple for now.
+            console.error(e);
+          }
+        }}
         userName={otherParticipant.name}
       />
       {isBlockConfirmOpen && (

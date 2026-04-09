@@ -5,33 +5,24 @@ import { CheckCircle, Clock, Flag, MoreHorizontal } from 'lucide-react';
 import StatCard from '@/components/admin/dashboard/Shared/StatsCard';
 import TableToolbar from '@/components/admin/dashboard/Shared/TableToolbar';
 import DataTable, { ColumnDef } from '@/components/admin/dashboard/Shared/DataTable';
-import UserCell from '@/components/admin/dashboard/Shared/UserCell';
 import ReportDetailsModal from './ReportsDetailModal';
 import BanUserModal from './BanUserModal';
-
-type ReportStatus = 'Pending' | 'Resolved';
-type ReportReason = 'Fraud' | 'Abuse' | 'Spam' | 'Other';
+import { fetchTaskReports, type AdminTaskReport } from '@/utils/api/admin.reports.api';
+import { formatDistanceToNow } from 'date-fns';
+import { createPortal } from 'react-dom';
 
 type ReportedUserRow = {
-  id: number;
-  avatar: string;
-  name: string;
-  email: string;
-  reports: number;
-  reason: ReportReason;
+  id: string; // reportId
+  report: AdminTaskReport;
+  taskTitle: string;
+  reporterName: string;
+  reporterEmail: string;
+  ownerName: string;
+  reports: number; // kept for UI badge; currently 1 per row
+  reason: string;
   latest: string;
-  status: ReportStatus;
+  status: 'Pending' | 'Resolved';
 };
-
-const reportsData: ReportedUserRow[] = [
-  { id: 1, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Fraud', latest: '10m ago', status: 'Pending' },
-  { id: 2, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Fraud', latest: '10m ago', status: 'Pending' },
-  { id: 3, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Abuse', latest: '10m ago', status: 'Pending' },
-  { id: 4, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Abuse', latest: '10m ago', status: 'Pending' },
-  { id: 5, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Fraud', latest: '10m ago', status: 'Pending' },
-  { id: 6, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Abuse', latest: '10m ago', status: 'Pending' },
-  { id: 7, avatar: '/assets/images/Avatar.png', name: 'Mike Ross', email: 'info@gmail.com', reports: 8, reason: 'Abuse', latest: '10m ago', status: 'Pending' },
-];
 
 // ── Row action menu ───────────────────────────────────────────────────────────
 function RowActionMenu({
@@ -43,18 +34,42 @@ function RowActionMenu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      const clickedButton = ref.current?.contains(t);
+      const clickedMenu = menuRef.current?.contains(t);
+      if (!clickedButton && !clickedMenu) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const el = buttonRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: rect.right - 176, width: rect.width });
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [open]);
+
   return (
     <div className="relative" ref={ref}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((p) => !p)}
         className="p-1.5 text-textGray hover:text-textBlack hover:bg-gray-100 rounded-md transition-colors"
@@ -62,24 +77,37 @@ function RowActionMenu({
         <MoreHorizontal className="w-5 h-5" />
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden py-1">
-          <button
-            type="button"
-            onClick={() => { setOpen(false); onViewDetails(); }}
-            className="w-full text-left px-4 py-2.5 text-sm text-textBlack hover:bg-gray-50 transition-colors"
-          >
-            View Report Details
-          </button>
-          <button
-            type="button"
-            onClick={() => { setOpen(false); onBanUser(); }}
-            className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
-          >
-            Ban User
-          </button>
-        </div>
-      )}
+      {open && pos && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              ref={menuRef}
+              className="fixed w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] overflow-hidden py-1"
+              style={{ top: pos.top, left: pos.left }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onViewDetails();
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-textBlack hover:bg-gray-50 transition-colors"
+              >
+                View Report Details
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onBanUser();
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+              >
+                Ban User
+              </button>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }
@@ -88,34 +116,79 @@ function RowActionMenu({
 export default function ReportedUsers() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [page, setPage] = useState(2);
+  const [page, setPage] = useState(1);
   const [selectedRow, setSelectedRow] = useState<ReportedUserRow | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showBan, setShowBan] = useState(false);
+  const [rows, setRows] = useState<ReportedUserRow[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const status =
+          statusFilter === 'all' ? 'all' : (statusFilter as 'pending' | 'resolved' | 'reviewing' | 'dismissed');
+        const res = await fetchTaskReports({ page, limit: 10, status, q: search || undefined });
+        if (cancelled) return;
+
+        const mapped: ReportedUserRow[] = res.data.map((r) => {
+          const statusLabel = r.status === 'resolved' ? 'Resolved' : 'Pending';
+          const latest = formatDistanceToNow(new Date(r.createdAt), { addSuffix: true });
+          return {
+            id: r._id,
+            report: r,
+            taskTitle: r.taskId?.title || 'Unknown task',
+            reporterName: r.reporterUserId?.name || 'Unknown',
+            reporterEmail: r.reporterUserId?.email || '',
+            ownerName: r.taskId?.posterUserId?.name || 'Unknown',
+            reports: 1,
+            reason: r.reason,
+            latest,
+            status: statusLabel,
+          };
+        });
+
+        setRows(mapped);
+      } catch (e) {
+        console.error(e);
+        setRows([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, search, statusFilter]);
 
   const filtered = useMemo(() => {
-    return reportsData.filter((row) => {
-      const q = search.toLowerCase();
-      const matchSearch = !q || row.name.toLowerCase().includes(q) || row.email.toLowerCase().includes(q) || row.reason.toLowerCase().includes(q);
-      const matchStatus = statusFilter === 'all' || row.status.toLowerCase() === statusFilter;
-      return matchSearch && matchStatus;
-    });
-  }, [search, statusFilter]);
+    // Server already filters; keep client as a no-op for safety.
+    return rows;
+  }, [rows]);
 
-  const pendingCount = reportsData.filter((r) => r.status === 'Pending').length;
-  const resolvedCount = reportsData.filter((r) => r.status === 'Resolved').length;
+  const pendingCount = rows.filter((r) => r.status === 'Pending').length;
+  const resolvedCount = rows.filter((r) => r.status === 'Resolved').length;
 
   const columns: ColumnDef<ReportedUserRow>[] = [
     {
-      key: 'user',
-      header: 'User',
-      width: '20%',
-      render: (row) => <UserCell avatar={row.avatar} name={row.name} email={row.email} />,
+      key: 'task',
+      header: 'Task',
+      width: '34%',
+      render: (row) => (
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-textBlack truncate">{row.taskTitle}</p>
+          <p className="text-xs text-textGray mt-0.5 truncate">Owner: {row.ownerName}</p>
+        </div>
+      ),
     },
     {
-      key: 'email',
-      header: 'Email',
-      render: (row) => <span className="text-sm text-textGray">{row.email}</span>,
+      key: 'reporter',
+      header: 'Reported by',
+      render: (row) => (
+        <div className="min-w-0">
+          <p className="text-sm text-textBlack truncate">{row.reporterName}</p>
+          <p className="text-xs text-textGray mt-0.5 truncate">{row.reporterEmail}</p>
+        </div>
+      ),
     },
     {
       key: 'reports',
@@ -161,13 +234,13 @@ export default function ReportedUsers() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <h1 className="text-2xl font-semibold text-textBlack mb-6">Reported Users</h1>
+      <h1 className="text-2xl font-semibold text-textBlack mb-6">Reported Tasks</h1>
 
       {/* Stat cards */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <StatCard
-          label="Total Reports Today"
-          value={reportsData.length + 17}
+          label="Total Task Reports"
+          value={rows.length}
           icon={<Flag className="w-4 h-4" />}
           iconContainerClassName="bg-red-100 text-red-700"
         />
@@ -178,7 +251,7 @@ export default function ReportedUsers() {
           iconContainerClassName="bg-orange-100 text-orange-700"
         />
         <StatCard
-          label="Action Taken"
+          label="Resolved"
           value={resolvedCount}
           icon={<CheckCircle className="w-4 h-4" />}
           iconContainerClassName="bg-green-100 text-green-700"
@@ -190,9 +263,9 @@ export default function ReportedUsers() {
         columns={columns}
         rows={filtered}
         getRowKey={(r) => r.id}
-        totalResults={2846}
+        totalResults={rows.length}
         currentPage={page}
-        totalPages={3}
+        totalPages={Math.max(1, Math.ceil(rows.length / 10))}
         onPageChange={setPage}
         toolbar={
           <TableToolbar
@@ -219,19 +292,15 @@ export default function ReportedUsers() {
         isOpen={showDetails}
         onClose={() => setShowDetails(false)}
         onBanUser={() => { setShowDetails(false); setShowBan(true); }}
-        user={{
-          name: selectedRow?.name ?? '',
-          email: selectedRow?.email ?? '',
-          plan: 'Free',
-          location: 'New York, NY',
-        }}
+        report={selectedRow?.report ?? null}
       />
 
       {/* Ban User Modal */}
       <BanUserModal
         isOpen={showBan}
         onClose={() => setShowBan(false)}
-        userName={selectedRow?.name ?? ''}
+        userName={selectedRow?.report?.taskId?.posterUserId?.name ?? ''}
+        userId={selectedRow?.report?.taskId?.posterUserId?._id ?? null}
       />
     </div>
   );
