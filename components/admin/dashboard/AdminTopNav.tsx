@@ -17,7 +17,7 @@ export default function AdminTopNav({
   avatarSrc = "/assets/images/user.png",
   onLogout,
 }: AdminTopNavProps) {
-  const [openSearch, setOpenSearch] = useState(false);
+  // const [openSearch, setOpenSearch] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
@@ -25,9 +25,9 @@ export default function AdminTopNav({
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setOpenSearch(false);
-      }
+      // if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      //   setOpenSearch(false);
+      // }
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setOpenProfile(false);
       }
