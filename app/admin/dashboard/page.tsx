@@ -4,20 +4,20 @@ import React, { useState } from 'react';
 import { Briefcase, DollarSign, Users } from 'lucide-react';
 import EcosystemPulseStatCard    from '@/components/admin/dashboard/DashboardAnalytics/StatCard';
 import EcosystemPulseTrendsGraph from '@/components/admin/dashboard/DashboardAnalytics/TrendsGraph';
-import EcosystemPulseTasksChart  from '@/components/admin/dashboard/DashboardAnalytics/Chart';
-import { useDashboardStats, useUserChart, useCategoryChart } from '@/hooks/UseAdminDashboard';
-
+// import EcosystemPulseTasksChart  from '@/components/admin/dashboard/DashboardAnalytics/Chart';
+import { useDashboardStats, useUserChart} from '@/hooks/UseAdminDashboard';
+// import {  useCategoryChart } from '@/hooks/UseAdminDashboard';
 const fmt      = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 const fmtMoney = (n: number) => `$${(n / 100).toLocaleString()}`;
 
-const CATEGORY_COLORS: Record<string, string> = {
-  errands:     '#E84E3A',
-  tech:        '#1A3A4A',
-  design:      '#F97316',
-  moving:      '#F5C842',
-  'pet-care':  '#2CB5A0',
-  translation: '#8B5CF6',
-};
+// const CATEGORY_COLORS: Record<string, string> = {
+//   errands:     '#E84E3A',
+//   tech:        '#1A3A4A',
+//   design:      '#F97316',
+//   moving:      '#F5C842',
+//   'pet-care':  '#2CB5A0',
+//   translation: '#8B5CF6',
+// };
 
 const toYmd = (d: Date) => {
   const yyyy = d.getFullYear();
@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   const { data: statsData,    isLoading: statsLoading } = useDashboardStats();
   const { data: chartData }                             = useUserChart(period);
-  const { data: categoryData }                          = useCategoryChart();
+  // const { data: categoryData }                          = useCategoryChart();
 
   const stats = statsData?.data;
 
@@ -59,11 +59,11 @@ export default function DashboardPage() {
     return points;
   })();
 
-  const categoryChartData = (categoryData?.data ?? []).map((p) => ({
-    name:  p.category.charAt(0).toUpperCase() + p.category.slice(1),
-    value: p.count,
-    color: CATEGORY_COLORS[p.category] ?? '#6B7280',
-  }));
+  // const categoryChartData = (categoryData?.data ?? []).map((p) => ({
+  //   name:  p.category.charAt(0).toUpperCase() + p.category.slice(1),
+  //   value: p.count,
+  //   color: CATEGORY_COLORS[p.category] ?? '#6B7280',
+  // }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

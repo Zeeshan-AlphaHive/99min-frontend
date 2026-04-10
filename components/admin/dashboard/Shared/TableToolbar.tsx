@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search } from "lucide-react";
-
+import { ChevronDown } from "lucide-react";
+// import { Search } from "lucide-react";
 export type FilterOption = { label: string; value: string };
 
 export type ToolbarFilter = {

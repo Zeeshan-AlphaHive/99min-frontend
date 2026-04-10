@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
-
+import { ChevronDown } from "lucide-react";
+// import { SlidersHorizontal } from "lucide-react";
 type UserFilter = "All Task" | "Active" | "Suspended" | "Removed";
 
 const FILTER_OPTIONS: UserFilter[] = [
