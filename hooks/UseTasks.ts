@@ -170,9 +170,10 @@ export function useRespondToTask(taskId: string) {
   return useMutation({
     mutationFn: (payload: RespondToTaskPayload) => respondToTask(taskId, payload),
     onSuccess: () => {
-      // Refresh task detail (interestCount changes server-side)
+      // Refresh task detail (interestCount may change when helpers message)
       queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
       queryClient.invalidateQueries({ queryKey: taskKeys.responses(taskId) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
   });
 }

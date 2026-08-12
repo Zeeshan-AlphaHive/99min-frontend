@@ -114,7 +114,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5 text-textBlack" />
           </button>
@@ -142,7 +142,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
                   <button
                     key={reason}
                     onClick={() => setSelectedReason(reason)}
-                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors text-left
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer
                       ${
                         isSelected
                           ? 'bg-lightRed border-2 border-red text-darkRed'

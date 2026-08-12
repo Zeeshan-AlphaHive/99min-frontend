@@ -6,10 +6,13 @@ import {
   ApiMessage,
 } from "@/utils/api/message.api";
 import { useSocket } from "./UseSocket";
+import { useAuth } from "@/store/auth-context";
 
 export function useConversations() {
   const queryClient = useQueryClient();
   const socket = useSocket();
+  const { user } = useAuth();
+  const currentUserId = user?._id;
 
   const { data, isLoading, isError, error, refetch } =
     useQuery<GetConversationsResponse>({
@@ -22,6 +25,9 @@ export function useConversations() {
     if (!socket) return;
 
     const handleNewMessage = (message: ApiMessage) => {
+      const isOwnMessage =
+        message.senderId?.toString() === currentUserId?.toString();
+
       queryClient.setQueryData<GetConversationsResponse>(
         ["conversations"],
         (old) => {
@@ -35,7 +41,9 @@ export function useConversations() {
                 createdAt: message.createdAt,
                 senderId: message.senderId,
               },
-              unreadCount: conv.unreadCount + 1,
+              unreadCount: isOwnMessage
+                ? conv.unreadCount
+                : conv.unreadCount + 1,
               updatedAt: message.createdAt,
             };
           });
@@ -65,6 +73,23 @@ export function useConversations() {
       );
     };
 
+    const handlePresenceSync = (onlineUserIds: string[]) => {
+      const onlineSet = new Set(onlineUserIds.map(String));
+      queryClient.setQueryData<GetConversationsResponse>(
+        ["conversations"],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            data: old.data.map((conv) => ({
+              ...conv,
+              isOnline: onlineSet.has(conv.otherParticipant._id.toString()),
+            })),
+          };
+        }
+      );
+    };
+
     const handleUserOnline = (userId: string) => {
       queryClient.setQueryData<GetConversationsResponse>(
         ["conversations"],
@@ -73,7 +98,7 @@ export function useConversations() {
           return {
             ...old,
             data: old.data.map((conv) =>
-              conv.otherParticipant._id === userId
+              conv.otherParticipant._id.toString() === userId.toString()
                 ? { ...conv, isOnline: true }
                 : conv
             ),
@@ -90,7 +115,7 @@ export function useConversations() {
           return {
             ...old,
             data: old.data.map((conv) =>
-              conv.otherParticipant._id === userId
+              conv.otherParticipant._id.toString() === userId.toString()
                 ? { ...conv, isOnline: false }
                 : conv
             ),
@@ -101,16 +126,18 @@ export function useConversations() {
 
     socket.on("message:new", handleNewMessage);
     socket.on("conversation:read", handleConversationRead);
+    socket.on("presence:sync", handlePresenceSync);
     socket.on("user:online", handleUserOnline);
     socket.on("user:offline", handleUserOffline);
 
     return () => {
       socket.off("message:new", handleNewMessage);
       socket.off("conversation:read", handleConversationRead);
+      socket.off("presence:sync", handlePresenceSync);
       socket.off("user:online", handleUserOnline);
       socket.off("user:offline", handleUserOffline);
     };
-  }, [socket, queryClient]);
+  }, [socket, queryClient, currentUserId]);
 
   return {
     conversations: data?.data ?? [],

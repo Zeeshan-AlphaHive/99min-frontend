@@ -14,9 +14,10 @@ import TaskDescription from './TaskDescription';
 import TaskTags from './TaskTags';
 import TaskDetailsCTA from './TaskDetailsCTA';
 import dog from '@/public/assets/images/dog.jpg';
-import { useReportTask, useShareTask } from '@/hooks/UseTasks';
+import { useReportTask, useShareTask, taskKeys } from '@/hooks/UseTasks';
 import { getOrCreateConversation, sendMessage } from '@/utils/api/message.api';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 export interface TaskDetailsData {
   _id: string; image: string; title: string; description: string;
@@ -32,6 +33,7 @@ const isVideoUrl = (url: string): boolean =>
 
 const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false, onEdit, onDelete }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const t = useTranslations();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -70,6 +72,8 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ task, onBack, isOwner = false
     try {
       const res = await getOrCreateConversation(task.posterUserId, task._id);
       await sendMessage(res.data._id, trimmed);
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.detail(task._id) });
       router.push(`/dashboard/messages?conversationId=${res.data._id}`);
     } catch (err) { setSendError(err instanceof Error ? err.message : t("common.error")); setSending(false); }
   };

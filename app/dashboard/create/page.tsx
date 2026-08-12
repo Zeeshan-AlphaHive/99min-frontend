@@ -110,7 +110,7 @@ const CreateTaskPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => router.push("/dashboard/explore")}
-                className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-orange text-white font-semibold hover:opacity-90 transition"
+                className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-orange text-white font-semibold hover:opacity-90 transition cursor-pointer"
               >
                 {tr("Back to Explore")}
               </button>

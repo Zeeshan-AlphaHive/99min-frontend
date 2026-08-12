@@ -16,7 +16,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseClasses = 'font-bold rounded-xl transition-colors duration-200';
+  const baseClasses = 'font-bold rounded-xl transition-colors duration-200 cursor-pointer';
   
   const variantClasses = {
     primary: 'bg-orange hover:bg-orangeHover text-white',

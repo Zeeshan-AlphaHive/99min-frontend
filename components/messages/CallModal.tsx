@@ -50,7 +50,7 @@ const CallModal: React.FC<CallModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Blurred Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
         onClick={onClose}
       ></div>
 
@@ -61,7 +61,7 @@ const CallModal: React.FC<CallModalProps> = ({
           <h2 className="text-xl font-bold text-textBlack">{tr(title)}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5 text-textBlack" />

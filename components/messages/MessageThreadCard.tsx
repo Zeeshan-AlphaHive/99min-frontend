@@ -25,7 +25,7 @@ const MessageThreadCard: React.FC<MessageThreadCardProps> = ({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 text-left"
+      className="w-full flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 text-left cursor-pointer"
     >
       {/* Avatar */}
       <div className="relative shrink-0">

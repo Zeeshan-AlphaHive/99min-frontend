@@ -58,8 +58,8 @@ const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ compact = false }) 
         onClick={() => setIsOpen(!isOpen)}
         className={
           compact
-            ? "p-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 bg-transparent"
-            : "w-full flex items-center gap-2 bg-lightGrey border border-orange/30 rounded-lg px-3 py-2 hover:opacity-90 transition-opacity"
+            ? "p-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 bg-transparent cursor-pointer"
+            : "w-full flex items-center gap-2 bg-lightGrey border border-orange/30 rounded-lg px-3 py-2 hover:opacity-90 transition-opacity cursor-pointer"
         }
       >
         <Globe className="w-5 h-5 text-orange shrink-0" />
@@ -93,7 +93,7 @@ const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ compact = false }) 
                 <button
                   key={code}
                   onClick={() => handleLanguageSelect(code)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center justify-between
+                  className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors flex items-center justify-between cursor-pointer
                     ${isSelected ? "bg-iconBg text-orange" : "text-textBlack hover:bg-gray-50"}`}
                 >
                   <span className="font-medium text-sm">

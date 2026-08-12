@@ -1,150 +1,275 @@
 "use client";
+
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useI18n } from "@/contexts/i18n-context";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import ExploreHeader from "@/components/dashboard/ExploreHeader";
-import TaskCard from "@/components/dashboard/TaskCard";
-import PinnedTaskCard from "@/components/dashboard/PinnedTaskCard";
 import TaskDetails, { TaskDetailsData } from "@/components/dashboard/TaskDetails";
 import ShareAdModal from "@/components/dashboard/ShareAdModal";
 import ReportAdModal from "@/components/dashboard/ReportAdModal";
 import DeleteAdModal from "@/components/dashboard/DeleteAdModal";
+import ExploreCategoryTabs from "@/components/dashboard/explore/ExploreCategoryTabs";
+import ExplorePromoBanner from "@/components/dashboard/explore/ExplorePromoBanner";
+import ExploreCompactCard from "@/components/dashboard/explore/ExploreCompactCard";
+import ExploreRecommendedCard from "@/components/dashboard/explore/ExploreRecommendedCard";
+import ExploreHorizontalSection from "@/components/dashboard/explore/ExploreHorizontalSection";
+import { mapApiTask, type ExploreTask } from "@/components/dashboard/explore/explore-utils";
 import { useTasks, useShareTask, useReportTask, useDeleteTask } from "@/hooks/UseTasks";
 import { useAuth } from "@/store/auth-context";
-import type { ApiTask } from "@/utils/api/tasks.api";
 import { useSearch } from "@/contexts/search-context";
 import { useDebounce } from "@/hooks/UseDebounce";
 
-function formatTimeLeft(expiresAt: string): string {
-  const diff = new Date(expiresAt).getTime() - Date.now();
-  if (diff <= 0) return "Expired";
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  return `${hrs}h ${mins % 60}m`;
-}
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins} minutes ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} hours ago`;
-  return `${Math.floor(hrs / 24)} days ago`;
-}
-interface TaskWithOwner extends TaskDetailsData { createdBy: string; posterUserId: string; }
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-function buildMediaUrl(path?: string): string {
-  if (!path) return "/placeholder.png";
-  if (path.startsWith("http")) return path;
-  return `${API_URL}/${path.replace(/^\//, "")}`;
-}
-function mapApiTask(task: ApiTask): TaskWithOwner {
-  return {
-    _id: task._id, image: buildMediaUrl(task.media?.[0]), title: task.title, description: task.description,
-    price: task.budget.min === task.budget.max ? `${task.budget.min}` : `${task.budget.min}-${task.budget.max}`,
-    location: task.location.label, timeLeft: formatTimeLeft(task.expiresAt),
-    interest: task.interestCount ?? 0, urgent: task.urgent, category: task.category,
-    postedTime: `Posted ${timeAgo(task.createdAt)}`, tags: task.tags?.map((t) => `#${t}`) ?? [],
-    createdBy: task.posterUserId._id, posterUserId: task.posterUserId._id,
-  };
-}
-
 const ExplorePage: React.FC = () => {
   const router = useRouter();
-  const t = useTranslations();
+  const { tr } = useI18n();
   const { query } = useSearch();
   const debouncedQuery = useDebounce(query, 400);
-  const [selectedTask, setSelectedTask] = useState<TaskWithOwner | null>(null);
+
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedTask, setSelectedTask] = useState<ExploreTask | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+
   const { user } = useAuth();
   const currentUserId = user?._id ?? "";
-  const { data, isLoading, error, refetch } = useTasks({
-    status: "active",
-    sort: "newest",
+
+  const listParams = {
+    status: "active" as const,
     q: debouncedQuery || undefined,
-  });
-  const tasks: TaskWithOwner[] = (data?.data ?? []).map(mapApiTask);
+    category: selectedCategory || undefined,
+    limit: 20,
+  };
+
+  const {
+    data: newestData,
+    isLoading: newestLoading,
+    error: newestError,
+    refetch,
+  } = useTasks({ ...listParams, sort: "newest" });
+
+  const {
+    data: popularData,
+    isLoading: popularLoading,
+  } = useTasks({ ...listParams, sort: "popular" });
+
+  const galerieTasks: ExploreTask[] = (newestData?.data ?? []).map(mapApiTask);
+  const recommendedTasks: ExploreTask[] = (popularData?.data ?? []).map(mapApiTask);
+  const isSearchMode = !!debouncedQuery;
+  const isLoading = newestLoading || popularLoading;
+  const error = newestError;
+
   const { mutate: recordShare } = useShareTask();
   const { mutateAsync: submitReport } = useReportTask(activeTaskId ?? "");
   const { mutateAsync: deleteTask } = useDeleteTask();
-  const handleTaskClick = (task: TaskWithOwner) => setSelectedTask(task);
+
+  const handleTaskClick = (task: ExploreTask) => setSelectedTask(task);
   const handleBack = () => setSelectedTask(null);
-  const handleShare = (taskId: string) => { setActiveTaskId(taskId); setIsShareModalOpen(true); recordShare(taskId); };
-  const handleReport = (taskId: string) => { setActiveTaskId(taskId); setIsReportModalOpen(true); };
+
+  const handleShare = (taskId: string) => {
+    setActiveTaskId(taskId);
+    setIsShareModalOpen(true);
+    recordShare(taskId);
+  };
+
+  const handleReport = (taskId: string) => {
+    setActiveTaskId(taskId);
+    setIsReportModalOpen(true);
+  };
+
   const handleReportSubmit = async (reason: string, details: string) => {
     try {
-      await submitReport({ reason: reason as "spam" | "inappropriate" | "scam" | "duplicate" | "other", details });
+      await submitReport({
+        reason: reason as "spam" | "inappropriate" | "scam" | "duplicate" | "other",
+        details,
+      });
       setIsReportModalOpen(false);
-    } catch (err: unknown) { alert(err instanceof Error ? err.message : t("common.error")); }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : tr("Something went wrong"));
+    }
   };
-  const handleEdit = (task: TaskWithOwner) => {
-    const params = new URLSearchParams({ editId: task._id, title: task.title, description: task.description,
-      category: task.category ?? "errands", budget: task.price, location: task.location,
-      tags: (task.tags ?? []).map((t) => t.replace(/^#/, "")).join(","), duration: "90_mins" });
+
+  const handleEdit = (task: ExploreTask) => {
+    const params = new URLSearchParams({
+      editId: task._id,
+      title: task.title,
+      description: task.description,
+      category: task.category ?? "errands",
+      budget: task.price,
+      location: task.location,
+      tags: (task.tags ?? []).map((tag) => tag.replace(/^#/, "")).join(","),
+      duration: "90_mins",
+    });
     router.push(`/dashboard/create?${params.toString()}`);
   };
-  const handleDeleteRequest = (taskId: string) => { setTaskToDelete(taskId); setIsDeleteModalOpen(true); };
+
+  const handleDeleteRequest = (taskId: string) => {
+    setTaskToDelete(taskId);
+    setIsDeleteModalOpen(true);
+  };
+
   const handleDeleteConfirm = async () => {
     if (!taskToDelete) return;
     try {
-      await deleteTask(taskToDelete); setIsDeleteModalOpen(false); setTaskToDelete(null);
+      await deleteTask(taskToDelete);
+      setIsDeleteModalOpen(false);
+      setTaskToDelete(null);
       if (selectedTask?._id === taskToDelete) setSelectedTask(null);
       refetch();
-    } catch (err: unknown) { alert(err instanceof Error ? err.message : t("common.error")); }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : tr("Something went wrong"));
+    }
   };
 
   if (selectedTask) {
     const isOwner = selectedTask.createdBy === currentUserId;
     return (
       <DashboardLayout>
-        <TaskDetails task={selectedTask} onBack={handleBack} isOwner={isOwner}
-          onEdit={() => handleEdit(selectedTask)} onDelete={() => handleDeleteRequest(selectedTask._id)} />
-        <DeleteAdModal isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setTaskToDelete(null); }} onConfirm={handleDeleteConfirm} />
+        <TaskDetails
+          task={selectedTask as TaskDetailsData}
+          onBack={handleBack}
+          isOwner={isOwner}
+          onEdit={() => handleEdit(selectedTask)}
+          onDelete={() => handleDeleteRequest(selectedTask._id)}
+        />
+        <DeleteAdModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setTaskToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
       </DashboardLayout>
     );
   }
 
+  const emptyMessage = debouncedQuery
+    ? `No tasks found for "${debouncedQuery}"`
+    : tr("No tasks found");
+
   return (
     <DashboardLayout>
-      <div className="bg-inputBg p-6">
-        <div className="max-w-6xl mx-auto">
-          <ExploreHeader activeTasksCount={tasks.length} />
+      <div className="bg-inputBg min-h-screen pb-8">
+        <div className="max-w-6xl mx-auto px-4 pt-4 space-y-5">
+
+          {/* Category tabs */}
+          <ExploreCategoryTabs
+            selected={selectedCategory}
+            onChange={setSelectedCategory}
+          />
+
+          {/* Promo banner — hidden during search */}
+          {!isSearchMode && <ExplorePromoBanner />}
+
+          {/* Loading */}
           {isLoading && (
-            <p className="text-center text-textGray py-12">
-              {debouncedQuery ? `Searching for "${debouncedQuery}"...` : t("task.loadingTasks")}
+            <p className="text-center text-textGray py-8">
+              {debouncedQuery
+                ? `Searching for "${debouncedQuery}"...`
+                : tr("Loading tasks...")}
             </p>
           )}
-          {error && <p className="text-center text-red-500 py-12">{error instanceof Error ? error.message : t("task.failedLoad")}</p>}
+
+          {/* Error */}
+          {error && (
+            <p className="text-center text-red-500 py-8">
+              {error instanceof Error ? error.message : tr("Failed to load tasks")}
+            </p>
+          )}
+
           {!isLoading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <PinnedTaskCard />
-              {tasks.length === 0 ? (
-                <p className="text-textGray text-center col-span-2 py-12">
-                  {debouncedQuery ? `No tasks found for "${debouncedQuery}"` : t("task.noTasksFound")}
-                </p>
+            <>
+              {/* Search results — vertical grid */}
+              {isSearchMode ? (
+                <section>
+                  <h2 className="text-base font-bold text-textBlack mb-3">
+                    {tr("Search results")}
+                  </h2>
+                  {galerieTasks.length === 0 ? (
+                    <p className="text-sm text-textGray text-center py-8">{emptyMessage}</p>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {galerieTasks.map((task) => (
+                        <ExploreRecommendedCard
+                          key={task._id}
+                          image={task.image}
+                          title={task.title}
+                          price={task.price}
+                          interest={task.interest}
+                          urgent={task.urgent}
+                          fullWidth
+                          onClick={() => handleTaskClick(task)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
               ) : (
-                tasks.map((task) => (
-                  <TaskCard key={task._id} {...task} isOwner={task.createdBy === currentUserId}
-                    posterUserId={task.posterUserId} taskId={task._id}
-                    onClick={() => handleTaskClick(task)} onShare={() => handleShare(task._id)}
-                    onReport={() => handleReport(task._id)} onEdit={() => handleEdit(task)}
-                    onDelete={() => handleDeleteRequest(task._id)} />
-                ))
+                <>
+                  {/* Galerie — newest tasks */}
+                  <ExploreHorizontalSection
+                    title={tr("Gallery")}
+                    isEmpty={galerieTasks.length === 0}
+                    emptyMessage={emptyMessage}
+                  >
+                    {galerieTasks.map((task) => (
+                      <ExploreCompactCard
+                        key={task._id}
+                        image={task.image}
+                        title={task.title}
+                        price={task.price}
+                        onClick={() => handleTaskClick(task)}
+                      />
+                    ))}
+                  </ExploreHorizontalSection>
+
+                  {/* Recommended — popular tasks */}
+                  <ExploreHorizontalSection
+                    title={tr("Recommended for you")}
+                    isEmpty={recommendedTasks.length === 0}
+                  >
+                    {recommendedTasks.map((task) => (
+                      <ExploreRecommendedCard
+                        key={task._id}
+                        image={task.image}
+                        title={task.title}
+                        price={task.price}
+                        interest={task.interest}
+                        urgent={task.urgent}
+                        onClick={() => handleTaskClick(task)}
+                      />
+                    ))}
+                  </ExploreHorizontalSection>
+                </>
               )}
-            </div>
+            </>
           )}
         </div>
-        <ShareAdModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} onShare={(platform) => console.log("Shared on:", platform)} />
-        <ReportAdModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} onSubmit={handleReportSubmit} />
-        <DeleteAdModal isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setTaskToDelete(null); }} onConfirm={handleDeleteConfirm} />
+
+        <ShareAdModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          onShare={(platform) => console.log("Shared on:", platform)}
+        />
+        <ReportAdModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          onSubmit={handleReportSubmit}
+        />
+        <DeleteAdModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setTaskToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+        />
       </div>
     </DashboardLayout>
   );
 };
+
 export default ExplorePage;

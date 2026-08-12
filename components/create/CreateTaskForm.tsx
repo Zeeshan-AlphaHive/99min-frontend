@@ -395,7 +395,7 @@ const parseBudget = (raw: string): ParsedBudget | null => {
           value={formData.category}
           onValueChange={(value) => handleChange('category', value)}
         >
-          <SelectTrigger className={`relative h-12 w-full rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary ${inputClass('category')}`}>
+          <SelectTrigger className={`relative h-12 w-full rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary cursor-pointer ${inputClass('category')}`}>
             <SelectValue placeholder={tr('Select category')} />
           </SelectTrigger>
           <SelectContent className="w-full">
@@ -467,7 +467,7 @@ const parseBudget = (raw: string): ParsedBudget | null => {
             value={formData.duration}
             onValueChange={(value) => handleChange('duration', value as FormData['duration'])}
           >
-            <SelectTrigger className={`relative h-12 w-full pl-10 pr-4 rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary ${inputClass('duration')}`}>
+            <SelectTrigger className={`relative h-12 w-full pl-10 pr-4 rounded-xl mt-2 border border-gray-200 bg-gray-50 focus:ring-primary cursor-pointer ${inputClass('duration')}`}>
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <Clock className="w-5 h-5 text-gray-600" />
               </span>
@@ -535,7 +535,7 @@ const parseBudget = (raw: string): ParsedBudget | null => {
                 >
                   <button
                     type="button"
-                    className="absolute top-1 right-1 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center hover:bg-gray-300 z-10"
+                    className="absolute top-1 right-1 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center hover:bg-gray-300 z-10 cursor-pointer"
                     onClick={() => removeFile(index)}
                   >
                     <X className="w-3 h-3" />

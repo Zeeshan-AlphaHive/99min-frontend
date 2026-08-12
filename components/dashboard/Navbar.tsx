@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm transition-colors relative pb-1 whitespace-nowrap ${
+                  className={`text-sm transition-colors relative pb-1 whitespace-nowrap cursor-pointer ${
                     isActive
                       ? "text-textBlack font-bold"
                       : "text-textGray hover:text-textBlack font-medium"
@@ -85,7 +85,7 @@ const Navbar: React.FC = () => {
             {!isSettingsRoute && (
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                className="md:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                 aria-label="Search"
               >
                 <Search className="w-5 h-5 text-textGray" />
@@ -103,7 +103,7 @@ const Navbar: React.FC = () => {
             {/* Icon links: desktop only (lg+) — shown in hamburger on smaller screens */}
             {iconLinks.map(({ href, icon: Icon, route }) => (
               <Link key={href} href={href} className="hidden lg:block">
-                <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
                   <Icon className={`w-5 h-5 ${pathname === route ? "text-orange" : "text-textGray"}`} />
                 </button>
               </Link>
@@ -112,7 +112,7 @@ const Navbar: React.FC = () => {
             {/* Hamburger: visible below lg */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
               aria-label="Menu"
             >
               {isMobileMenuOpen
@@ -152,7 +152,7 @@ const Navbar: React.FC = () => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`font-semibold text-sm py-2.5 px-3 rounded-lg transition-colors ${
+                    className={`font-semibold text-sm py-2.5 px-3 rounded-lg transition-colors cursor-pointer ${
                       isActive
                         ? "text-orange bg-orange/5"
                         : "text-textGray hover:text-textBlack hover:bg-gray-50"
@@ -171,7 +171,7 @@ const Navbar: React.FC = () => {
                     key={href}
                     href={href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 font-semibold text-sm py-2.5 px-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 font-semibold text-sm py-2.5 px-3 rounded-lg transition-colors cursor-pointer ${
                       isActive
                         ? "text-orange bg-orange/5"
                         : "text-textGray hover:text-textBlack hover:bg-gray-50"

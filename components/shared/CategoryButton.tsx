@@ -37,7 +37,7 @@ const CategoryButton: React.FC<CategoryButtonProps> = ({
     <button
       onClick={onClick}
       type="button"
-      className={`flex items-center gap-2 px-4 py-2.5 ${roundedClass} text-sm font-bold transition-colors whitespace-nowrap
+      className={`flex items-center gap-2 px-4 py-2.5 ${roundedClass} text-sm font-bold transition-colors whitespace-nowrap cursor-pointer
         ${active
           ? 'bg-orange text-white'
           : 'bg-white text-textBlack border border-gray-200 hover:bg-gray-50'

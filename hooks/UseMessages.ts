@@ -13,6 +13,7 @@ import {
 } from "@/utils/api/message.api";
 import { useSocket } from "./UseSocket";
 import { useAuth } from "@/store/auth-context";
+import { taskKeys } from "./UseTasks";
 
 type MessageCache = {
   pages: GetMessagesResponse[];
@@ -169,6 +170,7 @@ export function useMessages(conversationId: string | null) {
       );
 
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
 
     onError: (_err, _body, context) => {

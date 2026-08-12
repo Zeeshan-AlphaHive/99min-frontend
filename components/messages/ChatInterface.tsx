@@ -121,7 +121,7 @@ const handleBlockUser = async () => {
       <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-4 shrink-0">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+          className="p-2 hover:bg-gray-50 rounded-lg transition-colors shrink-0 cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5 text-textBlack" />
         </button>
@@ -150,20 +150,20 @@ const handleBlockUser = async () => {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setIsVoiceCallModalOpen(true)}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
           >
             <Phone className="w-5 h-5 text-textGray" />
           </button>
           <button
             onClick={() => setIsVideoCallModalOpen(true)}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
           >
             <Video className="w-5 h-5 text-textGray" />
           </button>
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
             >
               <MoreVertical className="w-5 h-5 text-textGray" />
             </button>
@@ -196,7 +196,7 @@ const handleBlockUser = async () => {
       {isMuted && (
         <div className="bg-yellow-50 border-b border-yellow-100 px-4 py-2 text-xs text-yellow-700 text-center shrink-0">
           {tr("Notifications muted for this conversation.")}{" "}
-          <button onClick={handleMuteNotifications} className="underline font-semibold">
+          <button onClick={handleMuteNotifications} className="underline font-semibold cursor-pointer">
             {tr("Unmute")}
           </button>
         </div>
@@ -206,7 +206,7 @@ const handleBlockUser = async () => {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {hasMore && (
           <div className="text-center">
-            <button onClick={() => loadMore()} className="text-xs text-textGray underline">
+            <button onClick={() => loadMore()} className="text-xs text-textGray underline cursor-pointer">
               {tr("Load earlier messages")}
             </button>
           </div>
@@ -292,7 +292,7 @@ const handleBlockUser = async () => {
           <button
             onClick={handleSend}
             disabled={!input.trim() || sending}
-            className="p-2.5 bg-orange text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-40 shrink-0"
+            className="p-2.5 bg-orange text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 cursor-pointer"
           >
             {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </button>
@@ -343,13 +343,13 @@ const handleBlockUser = async () => {
         <div className="flex gap-3">
           <button
             onClick={() => setIsBlockConfirmOpen(false)}
-            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-textBlack font-semibold text-sm hover:bg-gray-50 transition"
+            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-textBlack font-semibold text-sm hover:bg-gray-50 transition cursor-pointer"
           >
             {tr("Cancel")}
           </button>
           <button
             onClick={handleBlockUser}
-            className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:opacity-90 transition"
+            className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:opacity-90 transition cursor-pointer"
           >
             {tr("Block")}
           </button>
@@ -371,13 +371,13 @@ const handleBlockUser = async () => {
       <div className="flex gap-3">
         <button
           onClick={() => setIsDeleteChatConfirmOpen(false)}
-          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-textBlack font-semibold text-sm hover:bg-gray-50 transition"
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-textBlack font-semibold text-sm hover:bg-gray-50 transition cursor-pointer"
         >
           {tr("Cancel")}
         </button>
         <button
           onClick={handleDeleteChat}
-          className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:opacity-90 transition"
+          className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm hover:opacity-90 transition cursor-pointer"
         >
           {tr("Delete")}
         </button>

@@ -15,20 +15,16 @@ const MessagesPage: React.FC = () => {
   const pathname = usePathname();
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [manualSelection, setManualSelection] = useState<ApiConversation | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const { conversations, loading, error, refresh } = useConversations();
 
   const urlConversationId = searchParams.get("conversationId");
-
-  // Derive selected conversation without useEffect:
-  // Manual click takes priority, then URL param
-  const selectedConversation: ApiConversation | null =
-    manualSelection ??
-    (urlConversationId
-      ? (conversations.find((c) => c._id === urlConversationId) ?? null)
-      : null);
+  const activeId = selectedId ?? urlConversationId;
+  const selectedConversation: ApiConversation | null = activeId
+    ? (conversations.find((c) => c._id === activeId) ?? null)
+    : null;
 
   const filteredConversations = conversations.filter(
     (conv) =>
@@ -38,7 +34,7 @@ const MessagesPage: React.FC = () => {
       conv.lastMessage?.body.toLowerCase().includes(searchQuery.toLowerCase())
   );
 const handleBack = () => {
-    setManualSelection(null);
+    setSelectedId(null);
     // Also clear the URL param if it exists
     if (urlConversationId) {
       router.replace(pathname); // removes ?conversationId= from URL
@@ -76,7 +72,7 @@ const handleBack = () => {
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl">
             {error}{" "}
-            <button onClick={() => refresh()} className="underline font-semibold">
+            <button onClick={() => refresh()} className="underline font-semibold cursor-pointer">
               {tr("Retry")}
             </button>
           </div>
@@ -108,7 +104,7 @@ const handleBack = () => {
                 <MessageThreadCard
                   key={conv._id}
                   conversation={conv}
-                  onClick={() => setManualSelection(conv)}
+                  onClick={() => setSelectedId(conv._id)}
                 />
               ))
             ) : (
